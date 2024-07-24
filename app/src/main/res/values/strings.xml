@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">JustFly</string>
+    <string name="textMessage">Here is a good message for you.</string>
+    <string name="clickMessage">Click !</string>
+</resources>
