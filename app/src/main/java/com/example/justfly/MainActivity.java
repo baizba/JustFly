@@ -104,6 +104,10 @@ public class MainActivity extends AppCompatActivity {
         mapView.getController().setCenter(startPoint);
 
         //location tracking
+        initializeMyLocationOverlay();
+    }
+
+    private void initializeMyLocationOverlay() {
         myLocationNewOverlay = new MyLocationNewOverlay(mapView);
         myLocationNewOverlay.enableMyLocation();
         myLocationNewOverlay.enableFollowLocation();
