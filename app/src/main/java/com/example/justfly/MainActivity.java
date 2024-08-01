@@ -1,22 +1,18 @@
 package com.example.justfly;
 
-import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.justfly.permission.LocationPermissionHandler;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -26,23 +22,22 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int REQUEST_LOCATION_PERMISSION = 1;
-
     private MapView mapView;
     private MyLocationNewOverlay myLocationNewOverlay;
+    private LocationPermissionHandler locationPermissionHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         loadPreferences();
-
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         setupInsets();
 
-        if (!hasLocationPermission()) {
-            requestLocationPermission();
+        locationPermissionHandler = new LocationPermissionHandler(this);
+        if (!locationPermissionHandler.hasLocationPermission()) {
+            locationPermissionHandler.requestLocationPermission();
         } else {
             initializeMap();
         }
@@ -51,15 +46,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                initializeMap();
-            } else {
-                // Permission denied, show a message to the user
-                String message = "Location permission is required for this app to function properly";
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-            }
-        }
+        locationPermissionHandler.onRequestPermissionsResult(
+                requestCode,
+                grantResults,
+                this::initializeMap,
+                this::showLocationRequestMessage
+        );
     }
 
     @Override
@@ -82,16 +74,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean hasLocationPermission() {
-        return ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestLocationPermission() {
-        String[] permissionsToRequest = {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION};
-        ActivityCompat.requestPermissions(this, permissionsToRequest, REQUEST_LOCATION_PERMISSION);
-    }
-
     private void initializeMap() {
         //map configuration
         mapView = findViewById(R.id.map);
@@ -105,6 +87,10 @@ public class MainActivity extends AppCompatActivity {
 
         //location tracking
         initializeMyLocationOverlay();
+    }
+
+    private void showLocationRequestMessage() {
+        Toast.makeText(this, R.string.locationRequestMessage, Toast.LENGTH_SHORT).show();
     }
 
     private void initializeMyLocationOverlay() {
