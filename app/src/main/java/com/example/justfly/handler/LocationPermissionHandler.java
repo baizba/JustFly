@@ -1,4 +1,4 @@
-package com.example.justfly.permission;
+package com.example.justfly.handler;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;

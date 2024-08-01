@@ -1,4 +1,4 @@
-package com.example.justfly.permission;
+package com.example.justfly.handler;
 
 /**
  * Since java is missing simple callback interface i made this one.

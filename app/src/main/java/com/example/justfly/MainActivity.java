@@ -12,13 +12,14 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.justfly.permission.LocationPermissionHandler;
+import com.example.justfly.handler.LocationPermissionHandler;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
+
+import java.util.function.BiConsumer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        loadPreferences();
+        handlePreferences(Configuration.getInstance()::load);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         setupInsets();
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         myLocationNewOverlay.enableMyLocation();
         super.onResume();
-        loadPreferences();
+        handlePreferences(Configuration.getInstance()::load);
         if (mapView != null) {
             mapView.onResume();
         }
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         myLocationNewOverlay.disableMyLocation();
-        savePreferences();
+        handlePreferences(Configuration.getInstance()::save);
         if (mapView != null) {
             mapView.onPause();
         }
@@ -82,8 +83,6 @@ public class MainActivity extends AppCompatActivity {
         mapView.setMinZoomLevel(5.0);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
-        GeoPoint startPoint = new GeoPoint(48.8583, 2.2944);
-        mapView.getController().setCenter(startPoint);
 
         //location tracking
         initializeMyLocationOverlay();
@@ -100,18 +99,11 @@ public class MainActivity extends AppCompatActivity {
         mapView.getOverlays().add(myLocationNewOverlay);
     }
 
-    private void savePreferences() {
+    private void handlePreferences(BiConsumer<Context, SharedPreferences> operation) {
         String preferenceFileName = getPackageName() + "_preferences";
         SharedPreferences sharedPreferences = getSharedPreferences(preferenceFileName, Context.MODE_PRIVATE);
         Context ctx = getApplicationContext();
-        Configuration.getInstance().save(ctx, sharedPreferences);
-    }
-
-    private void loadPreferences() {
-        String preferenceFileName = getPackageName() + "_preferences";
-        SharedPreferences sharedPreferences = getSharedPreferences(preferenceFileName, Context.MODE_PRIVATE);
-        Context ctx = getApplicationContext();
-        Configuration.getInstance().load(ctx, sharedPreferences);
+        operation.accept(ctx, sharedPreferences);
     }
 
     private void setupInsets() {
