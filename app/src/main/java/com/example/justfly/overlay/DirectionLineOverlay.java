@@ -12,6 +12,15 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+/**
+ * Line is always drawn upright from the users location point on screen.
+ * How it works:
+ * Canvas is saved to stack. Then line is drawn upright from the users location on screen.
+ * Then the whole canvas is rotated for the amount of users direction (bearing).
+ * After that we draw the line (that displays the line on the screen)
+ * And finally we restore the canvas to remove all our transformations like rotate(...)
+ * so that the subsequent elements are drawn and shown on canvas normally.
+ */
 public class DirectionLineOverlay extends Overlay {
 
     private static final float LINE_LENGTH = 600.0f;
