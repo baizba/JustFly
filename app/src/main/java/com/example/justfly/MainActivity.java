@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.justfly.handler.LocationPermissionHandler;
+import com.example.justfly.overlay.DirectionLineOverlay;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -86,10 +87,14 @@ public class MainActivity extends AppCompatActivity {
 
         //location tracking
         initializeMyLocationOverlay();
+
+        //direction line
+        initializeDirectionLine();
     }
 
-    private void showLocationRequestMessage() {
-        Toast.makeText(this, R.string.locationRequestMessage, Toast.LENGTH_SHORT).show();
+    private void initializeDirectionLine() {
+        DirectionLineOverlay directionLineOverlay = new DirectionLineOverlay(myLocationNewOverlay);
+        mapView.getOverlays().add(directionLineOverlay);
     }
 
     private void initializeMyLocationOverlay() {
@@ -97,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
         myLocationNewOverlay.enableMyLocation();
         myLocationNewOverlay.enableFollowLocation();
         mapView.getOverlays().add(myLocationNewOverlay);
+    }
+
+    private void showLocationRequestMessage() {
+        Toast.makeText(this, R.string.locationRequestMessage, Toast.LENGTH_SHORT).show();
     }
 
     private void handlePreferences(BiConsumer<Context, SharedPreferences> operation) {
