@@ -5,7 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
-import android.util.Log;
+import android.location.Location;
 
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -24,27 +24,16 @@ public class DirectionLineOverlay extends Overlay {
     @Override
     public void draw(Canvas canvas, MapView mapView, boolean shadow) {
         GeoPoint currentLocation = myLocationNewOverlay.getMyLocation();
+
         // The direction the user is facing
-        float heading = myLocationNewOverlay.getLastFix().getBearing();
-        if (currentLocation == null)
+        Location lastFix = myLocationNewOverlay.getLastFix();
+
+        if (currentLocation == null || !lastFix.hasBearing()) {
             return;
+        }
 
         Point screenPoint = new Point();
         mapView.getProjection().toPixels(currentLocation, screenPoint);
-        Log.d(TAG, "screenPoint " + screenPoint);
-
-        // Calculate the endpoint of the line based on the heading and map size
-        int mapWidth = mapView.getWidth();
-        int mapHeight = mapView.getHeight();
-        float angle = (float) Math.toRadians(heading);
-        Log.d(TAG, "angle " + angle);
-
-        float lineLength = (float) Math.sqrt(mapWidth * mapWidth + mapHeight * mapHeight);
-        Log.d(TAG, "lineLength " + lineLength);
-
-        float endX = screenPoint.x + lineLength * (float) Math.cos(angle);
-        float endY = screenPoint.y - lineLength * (float) Math.sin(angle);
-        Log.d(TAG, "endX, endY: " + endX + ", " + endY);
 
         Paint paint = new Paint();
         paint.setColor(Color.BLUE);
@@ -54,8 +43,12 @@ public class DirectionLineOverlay extends Overlay {
 
         Path path = new Path();
         path.moveTo(screenPoint.x, screenPoint.y);
-        path.lineTo(endX, endY);
+        path.lineTo(screenPoint.x, screenPoint.y - 600);
 
+        //save and restore to restore original canvas rotation (check javadoc of these 2 methods)
+        canvas.save();
+        canvas.rotate(lastFix.getBearing(), screenPoint.x, screenPoint.y);
         canvas.drawPath(path, paint);
+        canvas.restore();
     }
 }
