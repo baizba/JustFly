@@ -3,6 +3,7 @@ package com.example.justfly;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         handlePreferences(Configuration.getInstance()::load);
         EdgeToEdge.enable(this);
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         //map configuration
         mapView = findViewById(R.id.map);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
-        mapView.getController().setZoom(10.0);
+        mapView.getController().setZoom(12.0);
         mapView.setMinZoomLevel(5.0);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
