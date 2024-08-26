@@ -18,7 +18,6 @@ import com.example.justfly.overlay.DirectionLineOverlay;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
@@ -40,13 +39,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setupInsets();
 
-        findViewById(R.id.btnFollowMe).setOnClickListener(listener -> {
-            myLocationNewOverlay.enableFollowLocation();
-            GeoPoint currentLocation = myLocationNewOverlay.getMyLocation();
-            if (currentLocation != null) {
-                mapView.getController().setCenter(currentLocation);
-            }
-        });
+        findViewById(R.id.btnFollowMe).setOnClickListener(v -> myLocationNewOverlay.enableFollowLocation());
 
         locationPermissionHandler = new LocationPermissionHandler(this);
         if (!locationPermissionHandler.hasLocationPermission()) {
@@ -90,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private void initializeMap() {
         //map configuration
         mapView = findViewById(R.id.map);
-        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        mapView.setTileSource(TileSourceFactory.OpenTopo);
         mapView.getController().setZoom(12.0);
         mapView.setMinZoomLevel(5.0);
         mapView.setMultiTouchControls(true);
