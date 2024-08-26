@@ -6,6 +6,5 @@ package com.example.justfly.handler;
  */
 @FunctionalInterface
 public interface VoidCallback {
-
     void execute();
 }

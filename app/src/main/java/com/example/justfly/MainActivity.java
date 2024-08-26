@@ -18,6 +18,7 @@ import com.example.justfly.overlay.DirectionLineOverlay;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
@@ -38,6 +39,14 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         setupInsets();
+
+        findViewById(R.id.btnFollowMe).setOnClickListener(listener -> {
+            myLocationNewOverlay.enableFollowLocation();
+            GeoPoint currentLocation = myLocationNewOverlay.getMyLocation();
+            if (currentLocation != null) {
+                mapView.getController().setCenter(currentLocation);
+            }
+        });
 
         locationPermissionHandler = new LocationPermissionHandler(this);
         if (!locationPermissionHandler.hasLocationPermission()) {

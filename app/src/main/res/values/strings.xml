@@ -3,4 +3,5 @@
     <string name="textMessage">Here is a good message for you.</string>
     <string name="clickMessage">Click !</string>
     <string name="locationRequestMessage">"Location permission is required for this app to function properly"</string>
+    <string name="btnFollowText">Follow</string>
 </resources>
