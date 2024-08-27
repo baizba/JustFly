@@ -36,7 +36,7 @@ public class MapFacade {
 
     private void initialize() {
         //map configuration
-        mapView.setTileSource(TileSourceFactory.OpenTopo);
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.getController().setZoom(12.0);
         mapView.setMinZoomLevel(5.0);
         mapView.setMultiTouchControls(true);
