@@ -14,16 +14,20 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.justfly.handler.LocationPermissionHandler;
-import com.example.justfly.map.MapFacade;
+import com.example.justfly.overlay.DirectionLineOverlay;
 
 import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.function.BiConsumer;
 
 public class MainActivity extends AppCompatActivity {
 
+    private MapView mapView;
+    private MyLocationNewOverlay myLocationNewOverlay;
     private LocationPermissionHandler locationPermissionHandler;
-    private MapFacade mapFacade;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,13 +39,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setupInsets();
 
-        findViewById(R.id.btnFollowMe).setOnClickListener(v -> mapFacade.enableFollowMyLocation());
+        findViewById(R.id.btnFollowMe).setOnClickListener(v -> myLocationNewOverlay.enableFollowLocation());
 
         locationPermissionHandler = new LocationPermissionHandler(this);
         if (!locationPermissionHandler.hasLocationPermission()) {
             locationPermissionHandler.requestLocationPermission();
         } else {
-            mapFacade = new MapFacade(findViewById(R.id.map));
+            initializeMap();
         }
     }
 
@@ -51,23 +55,57 @@ public class MainActivity extends AppCompatActivity {
         locationPermissionHandler.onRequestPermissionsResult(
                 requestCode,
                 grantResults,
-                () -> mapFacade = new MapFacade(findViewById(R.id.map)),
+                this::initializeMap,
                 this::showLocationRequestMessage
         );
     }
 
     @Override
     protected void onResume() {
+        myLocationNewOverlay.enableMyLocation();
         super.onResume();
         handlePreferences(Configuration.getInstance()::load);
-        mapFacade.resume();
+        if (mapView != null) {
+            mapView.onResume();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        myLocationNewOverlay.disableMyLocation();
         handlePreferences(Configuration.getInstance()::save);
-        mapFacade.pause();
+        if (mapView != null) {
+            mapView.onPause();
+        }
+    }
+
+    private void initializeMap() {
+        //map configuration
+        mapView = findViewById(R.id.map);
+        mapView.setTileSource(TileSourceFactory.OpenTopo);
+        mapView.getController().setZoom(12.0);
+        mapView.setMinZoomLevel(5.0);
+        mapView.setMultiTouchControls(true);
+        mapView.setTilesScaledToDpi(true);
+
+        //location tracking
+        initializeMyLocationOverlay();
+
+        //direction line
+        initializeDirectionLine();
+    }
+
+    private void initializeDirectionLine() {
+        DirectionLineOverlay directionLineOverlay = new DirectionLineOverlay(myLocationNewOverlay);
+        mapView.getOverlays().add(directionLineOverlay);
+    }
+
+    private void initializeMyLocationOverlay() {
+        myLocationNewOverlay = new MyLocationNewOverlay(mapView);
+        myLocationNewOverlay.enableMyLocation();
+        myLocationNewOverlay.enableFollowLocation();
+        mapView.getOverlays().add(myLocationNewOverlay);
     }
 
     private void showLocationRequestMessage() {
