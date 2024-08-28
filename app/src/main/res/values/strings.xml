@@ -4,4 +4,9 @@
     <string name="clickMessage">Click !</string>
     <string name="locationRequestMessage">"Location permission is required for this app to function properly"</string>
     <string name="btnFollowText">Follow</string>
+
+    <!--GPS Data fragment-->
+    <string name="gpsAltitude">Alt:</string>
+    <string name="gpsSpeed">Speed:</string>
+    <string name="gpsNoData">-</string>
 </resources>

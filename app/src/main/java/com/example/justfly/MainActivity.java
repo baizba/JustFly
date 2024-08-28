@@ -12,9 +12,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.justfly.handler.LocationPermissionHandler;
-import com.example.justfly.map.MapFacade;
 
 import org.osmdroid.config.Configuration;
 
@@ -23,26 +23,24 @@ import java.util.function.BiConsumer;
 public class MainActivity extends AppCompatActivity {
 
     private LocationPermissionHandler locationPermissionHandler;
-    private MapFacade mapFacade;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        handlePreferences(Configuration.getInstance()::load);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        setupInsets();
-
-        findViewById(R.id.btnFollowMe).setOnClickListener(v -> mapFacade.enableFollowMyLocation());
 
         locationPermissionHandler = new LocationPermissionHandler(this);
         if (!locationPermissionHandler.hasLocationPermission()) {
             locationPermissionHandler.requestLocationPermission();
         } else {
-            mapFacade = new MapFacade(findViewById(R.id.map));
+            loadFragments();
         }
+
+        handlePreferences(Configuration.getInstance()::load);
+        EdgeToEdge.enable(this);
+        setupInsets();
+
     }
 
     @Override
@@ -51,23 +49,16 @@ public class MainActivity extends AppCompatActivity {
         locationPermissionHandler.onRequestPermissionsResult(
                 requestCode,
                 grantResults,
-                () -> mapFacade = new MapFacade(findViewById(R.id.map)),
+                this::loadFragments,
                 this::showLocationRequestMessage
         );
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        handlePreferences(Configuration.getInstance()::load);
-        mapFacade.resume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        handlePreferences(Configuration.getInstance()::save);
-        mapFacade.pause();
+    private void loadFragments() {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.mapFragmentContainer, new MapFragment());
+        transaction.replace(R.id.gpsDataFragmentContainer, GpsDataFragment.newInstance("p1", "p2"));
+        transaction.commit();
     }
 
     private void showLocationRequestMessage() {

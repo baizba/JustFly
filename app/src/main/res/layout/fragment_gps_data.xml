@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GpsDataFragment">
+
+    <!-- Altitude Label -->
+    <TextView
+        android:id="@+id/labelAltitude"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:text="@string/gpsAltitude"
+        android:textSize="18sp"
+        android:layout_margin="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Altitude Value -->
+    <TextView
+        android:id="@+id/textAltitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/gpsNoData"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@id/labelAltitude"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Speed Label -->
+    <TextView
+        android:id="@+id/labelSpeed"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/gpsSpeed"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelAltitude" />
+
+    <!-- Speed Value -->
+    <TextView
+        android:id="@+id/textSpeed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/gpsNoData"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@id/labelSpeed"
+        app:layout_constraintTop_toBottomOf="@id/textAltitude" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
