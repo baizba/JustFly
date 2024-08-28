@@ -1,19 +1,18 @@
 package com.example.justfly;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.fragment.app.Fragment;
+
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link GpsData#newInstance} factory method to
+ * Use the {@link GpsDataFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class GpsData extends Fragment {
+public class GpsDataFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -24,7 +23,7 @@ public class GpsData extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public GpsData() {
+    public GpsDataFragment() {
         // Required empty public constructor
     }
 
@@ -36,9 +35,8 @@ public class GpsData extends Fragment {
      * @param param2 Parameter 2.
      * @return A new instance of fragment GpsData.
      */
-    // TODO: Rename and change types and number of parameters
-    public static GpsData newInstance(String param1, String param2) {
-        GpsData fragment = new GpsData();
+    public static GpsDataFragment newInstance(String param1, String param2) {
+        GpsDataFragment fragment = new GpsDataFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);

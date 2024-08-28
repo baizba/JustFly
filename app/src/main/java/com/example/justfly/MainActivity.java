@@ -56,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadFragments() {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.mapFragmentContainer, new Map());
-        transaction.replace(R.id.gpsDataFragmentContainer, GpsData.newInstance("p1", "p2"));
+        transaction.replace(R.id.mapFragmentContainer, new MapFragment());
+        transaction.replace(R.id.gpsDataFragmentContainer, GpsDataFragment.newInstance("p1", "p2"));
         transaction.commit();
     }
 

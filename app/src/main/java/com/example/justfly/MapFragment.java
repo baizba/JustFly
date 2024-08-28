@@ -17,7 +17,7 @@ import org.osmdroid.config.Configuration;
 
 import java.util.function.BiConsumer;
 
-public class Map extends Fragment {
+public class MapFragment extends Fragment {
 
     private MapFacade mapFacade;
 
