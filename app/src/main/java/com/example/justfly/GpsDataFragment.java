@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment;
 
 import com.example.justfly.livedata.UnitConversionUtil;
 
-import java.math.BigDecimal;
 import java.util.Locale;
 
 /**
