@@ -4,8 +4,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+
+import com.example.justfly.livedata.UnitConversionUtil;
+
+import java.math.BigDecimal;
+import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -54,9 +60,27 @@ public class GpsDataFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_gps_data, container, false);
+        View view = inflater.inflate(R.layout.fragment_gps_data, container, false);
+        subscribeToGpsUpdates(view);
+        return view;
+    }
+
+    private void subscribeToGpsUpdates(View view) {
+        TextView speedTextView = view.findViewById(R.id.textSpeed);
+        TextView altitudeTextView = view.findViewById(R.id.textAltitude);
+        MainActivity mainActivity = (MainActivity) getActivity();
+        Locale defaultLocale = Locale.getDefault();
+        assert mainActivity != null;
+        mainActivity.getGpsData().observe(
+                getViewLifecycleOwner(),
+                gpsData -> {
+                    long knots = UnitConversionUtil.msToKnots(gpsData.getSpeed());
+                    long feet = UnitConversionUtil.metersToFeet(gpsData.getAltitude());
+                    speedTextView.setText(String.format(defaultLocale, "%d KT", knots));
+                    altitudeTextView.setText(String.format(defaultLocale, "%d FT", feet));
+                }
+        );
     }
 }

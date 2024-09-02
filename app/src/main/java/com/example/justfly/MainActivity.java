@@ -13,8 +13,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.justfly.handler.LocationPermissionHandler;
+import com.example.justfly.livedata.GpsData;
 
 import org.osmdroid.config.Configuration;
 
@@ -23,6 +25,7 @@ import java.util.function.BiConsumer;
 public class MainActivity extends AppCompatActivity {
 
     private LocationPermissionHandler locationPermissionHandler;
+    private final MutableLiveData<GpsData> gpsData = new MutableLiveData<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +55,14 @@ public class MainActivity extends AppCompatActivity {
                 this::loadFragments,
                 this::showLocationRequestMessage
         );
+    }
+
+    public void updateGpsData(GpsData gpsData) {
+        this.gpsData.setValue(gpsData);
+    }
+
+    public MutableLiveData<GpsData> getGpsData() {
+        return gpsData;
     }
 
     private void loadFragments() {
