@@ -7,6 +7,6 @@
 
     <!--GPS Data fragment-->
     <string name="gpsAltitude">Alt:</string>
-    <string name="gpsSpeed">Speed:</string>
+    <string name="gpsSpeed">GS:</string>
     <string name="gpsNoData">-</string>
 </resources>

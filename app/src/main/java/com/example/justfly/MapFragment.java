@@ -25,13 +25,11 @@ public class MapFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
-
         handlePreferences(Configuration.getInstance()::load, view.getContext());
-
         view.findViewById(R.id.btnFollowMe).setOnClickListener(v -> mapFacade.enableFollowMyLocation());
-
-        mapFacade = new MapFacade(view.findViewById(R.id.map));
-
+        MainActivity mainActivity = (MainActivity) getActivity();
+        assert mainActivity != null;
+        mapFacade = new MapFacade(view.findViewById(R.id.map), mainActivity::updateGpsData);
         return view;
     }
 

@@ -9,7 +9,7 @@
     <!-- Altitude Label -->
     <TextView
         android:id="@+id/labelAltitude"
-        android:layout_width="80dp"
+        android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:text="@string/gpsAltitude"
         android:textSize="18sp"
@@ -31,7 +31,7 @@
     <!-- Speed Label -->
     <TextView
         android:id="@+id/labelSpeed"
-        android:layout_width="80dp"
+        android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="@string/gpsSpeed"
