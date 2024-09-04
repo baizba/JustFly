@@ -29,7 +29,7 @@ public class MapFragment extends Fragment {
         view.findViewById(R.id.btnFollowMe).setOnClickListener(v -> mapFacade.enableFollowMyLocation());
         MainActivity mainActivity = (MainActivity) getActivity();
         assert mainActivity != null;
-        mapFacade = new MapFacade(view.findViewById(R.id.map), mainActivity::updateGpsData);
+        mapFacade = new MapFacade(view.findViewById(R.id.map), mainActivity::updateGpsData, this);
         return view;
     }
 
