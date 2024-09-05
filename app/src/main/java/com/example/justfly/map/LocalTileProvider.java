@@ -9,6 +9,10 @@ import org.osmdroid.util.MapTileIndex;
 
 import java.io.File;
 
+/**
+ * Just an example how to load files exploded from folder
+ */
+@Deprecated
 public class LocalTileProvider extends MapTileProviderBase {
 
     public static final int ZOOM_MIN_LEVEL = 4;

@@ -2,28 +2,25 @@ package com.example.justfly.map;
 
 import android.os.Build;
 
-import com.example.justfly.MapFragment;
 import com.example.justfly.livedata.GpsData;
 import com.example.justfly.overlay.DirectionLineOverlay;
 
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
-import java.io.File;
 import java.util.function.Consumer;
 
 public class MapFacade {
 
     private final MapView mapView;
     private final Consumer<GpsData> gpsDataConsumer;
-    private final MapFragment mapFragment;
     private MyLocationNewOverlay myLocationNewOverlay;
 
-    public MapFacade(MapView mapView, Consumer<GpsData> gpsDataConsumer, MapFragment mapFragment) {
+    public MapFacade(MapView mapView, Consumer<GpsData> gpsDataConsumer) {
         this.mapView = mapView;
         this.gpsDataConsumer = gpsDataConsumer;
-        this.mapFragment = mapFragment;
         initialize();
     }
 
@@ -46,14 +43,12 @@ public class MapFacade {
     }
 
     private void initialize() {
-        //map configuration
-        //mapView.setTileSource(TileSourceFactory.MAPNIK);
-        File tileDirectory = new File(mapFragment.getActivity().getFilesDir(), "maps/openflightmaps");
-        LocalTileProvider tileProvider = new LocalTileProvider(tileDirectory);
-        mapView.setTileProvider(tileProvider);
+        XYTileSource tileSource = new XYTileSource("lo", 4, 11, 512, ".png", new String[]{""});
+        mapView.setTileSource(tileSource);
+        mapView.setUseDataConnection(false);
         mapView.getController().setZoom(11.0);
         mapView.setMinZoomLevel(4.0);
-        mapView.setMaxZoomLevel(11.0);
+        mapView.setMaxZoomLevel(14.0);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
         initializeMyLocationOverlay();
