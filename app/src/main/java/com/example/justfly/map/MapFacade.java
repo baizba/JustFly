@@ -40,7 +40,7 @@ public class MapFacade {
     public void switchMapSource() {
         ITileSource tileSource = mapView.getTileProvider().getTileSource();
         if (OPEN_VFR_SOURCE_NAME.equals(tileSource.name())) {
-            mapView.setTileSource(TileSourceFactory.MAPNIK);
+            mapView.setTileSource(TileSourceFactory.OpenTopo);
         } else {
             mapView.setTileSource(OPEN_VFR);
         }
