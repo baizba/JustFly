@@ -20,7 +20,7 @@ public class MapFacade {
     public static final int MAX_ZOOM = 11;
     public static final int TILE_SIZE = 512;
     public static final String FILENAME_ENDING = ".png";
-    public static final String OPEN_VFR_SOURCE_NAME = "lo";
+    public static final String OPEN_VFR_SOURCE_NAME = "openvfr";
     public static final XYTileSource OPEN_VFR = new XYTileSource(OPEN_VFR_SOURCE_NAME, MIN_ZOOM, MAX_ZOOM, TILE_SIZE, FILENAME_ENDING, new String[]{""});
 
     private final MapView mapView;
