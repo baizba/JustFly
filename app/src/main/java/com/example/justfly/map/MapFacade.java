@@ -5,6 +5,8 @@ import android.os.Build;
 import com.example.justfly.livedata.GpsData;
 import com.example.justfly.overlay.DirectionLineOverlay;
 
+import org.osmdroid.tileprovider.tilesource.ITileSource;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
@@ -13,6 +15,13 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import java.util.function.Consumer;
 
 public class MapFacade {
+
+    public static final int MIN_ZOOM = 4;
+    public static final int MAX_ZOOM = 11;
+    public static final int TILE_SIZE = 512;
+    public static final String FILENAME_ENDING = ".png";
+    public static final String OPEN_VFR_SOURCE_NAME = "lo";
+    public static final XYTileSource OPEN_VFR = new XYTileSource(OPEN_VFR_SOURCE_NAME, MIN_ZOOM, MAX_ZOOM, TILE_SIZE, FILENAME_ENDING, new String[]{""});
 
     private final MapView mapView;
     private final Consumer<GpsData> gpsDataConsumer;
@@ -26,6 +35,15 @@ public class MapFacade {
 
     public void enableFollowMyLocation() {
         myLocationNewOverlay.enableFollowLocation();
+    }
+
+    public void switchMapSource() {
+        ITileSource tileSource = mapView.getTileProvider().getTileSource();
+        if (OPEN_VFR_SOURCE_NAME.equals(tileSource.name())) {
+            mapView.setTileSource(TileSourceFactory.MAPNIK);
+        } else {
+            mapView.setTileSource(OPEN_VFR);
+        }
     }
 
     public void resume() {
@@ -43,8 +61,7 @@ public class MapFacade {
     }
 
     private void initialize() {
-        XYTileSource tileSource = new XYTileSource("lo", 4, 11, 512, ".png", new String[]{""});
-        mapView.setTileSource(tileSource);
+        mapView.setTileSource(OPEN_VFR);
         mapView.setUseDataConnection(false);
         mapView.getController().setZoom(11.0);
         mapView.setMinZoomLevel(4.0);
@@ -78,5 +95,4 @@ public class MapFacade {
         DirectionLineOverlay directionLineOverlay = new DirectionLineOverlay(myLocationNewOverlay);
         mapView.getOverlays().add(directionLineOverlay);
     }
-
 }
