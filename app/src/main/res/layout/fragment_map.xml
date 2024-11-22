@@ -13,6 +13,18 @@
         android:layout_height="match_parent"/>
 
     <ImageButton
+        android:id="@+id/btnSwitchMap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:background="@null"
+        android:contentDescription="@string/changeMapSource"
+        android:src="@drawable/ic_menu_mapmode"
+        app:layout_constraintBottom_toTopOf="@id/btnFollowMe"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageButton
         android:id="@+id/btnFollowMe"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
