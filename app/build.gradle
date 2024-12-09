@@ -26,6 +26,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+        }
+    }
 }
 
 dependencies {
@@ -35,7 +40,8 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
     implementation libs.osmdroid.android
-    testImplementation libs.junit
+    testImplementation libs.junit.jupiter
+    testImplementation platform(libs.junit.bom)
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }
