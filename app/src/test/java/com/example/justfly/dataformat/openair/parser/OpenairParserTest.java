@@ -68,6 +68,8 @@ class OpenairParserTest {
                 HIGH_6500FT,
                 LOW_4500FT
         );
+
+        System.out.println(openair.getAirspaces().get(0));
     }
 
     private void assertAirspace(

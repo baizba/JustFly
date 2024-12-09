@@ -4,8 +4,13 @@ import androidx.annotation.NonNull;
 
 public class PolygonPoint {
 
-    private long lat;
-    private long lon;
+    private double lat;
+    private double lon;
+
+    public PolygonPoint(double lat, double lon) {
+        this.lat = lat;
+        this.lon = lon;
+    }
 
     @NonNull
     @Override
