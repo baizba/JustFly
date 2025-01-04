@@ -1,8 +1,8 @@
 package com.example.justfly.dataformat.openair.parser;
 
+import static com.example.justfly.assertion.AirspaceAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.example.justfly.dataformat.openair.model.Airspace;
 import com.example.justfly.dataformat.openair.model.AirspaceClass;
 import com.example.justfly.dataformat.openair.model.Openair;
 
@@ -49,39 +49,25 @@ class OpenairParserTest {
     @Test
     void test_parseAirspace() {
         Openair openair = parser.parse(OPENAIR_DATA);
+
+        //there are 162 airspaces in lo_airspaces.openair.txt
         assertEquals(162, openair.getAirspaces().size());
 
         //1st airspace in lo_airspaces.openair.txt
-        assertAirspace(
-                openair.getAirspaces().get(0),
-                AirspaceClass.D,
-                MATZ_AIGEN,
-                HIGH_5000FT,
-                LOW_SFC
-        );
+        assertThat(openair.getAirspaces().get(0))
+                .hasAirspaceClass(AirspaceClass.D)
+                .hasAirspaceName(MATZ_AIGEN)
+                .hasAltitudeHigh(HIGH_5000FT)
+                .hasAltitudeLow(LOW_SFC);
 
         //last airspace in lo_airspaces.openair.txt
-        assertAirspace(
-                openair.getAirspaces().get(161),
-                AirspaceClass.W,
-                TRA_WIENERWALD_WEST,
-                HIGH_6500FT,
-                LOW_4500FT
-        );
+        assertThat(openair.getAirspaces().get(161))
+                .hasAirspaceClass(AirspaceClass.W)
+                .hasAirspaceName(TRA_WIENERWALD_WEST)
+                .hasAltitudeHigh(HIGH_6500FT)
+                .hasAltitudeLow(LOW_4500FT);
 
         System.out.println(openair.getAirspaces().get(0));
     }
 
-    private void assertAirspace(
-            Airspace airspace,
-            AirspaceClass airspaceClass,
-            String airspaceName,
-            String altitudeHigh,
-            String altitudeLow
-    ) {
-        assertEquals(airspaceClass, airspace.getAirspaceClass());
-        assertEquals(airspaceName, airspace.getAirspaceName());
-        assertEquals(altitudeHigh, airspace.getAltitudeHigh());
-        assertEquals(altitudeLow, airspace.getAltitudeLow());
-    }
 }

@@ -12,6 +12,8 @@ public class Airspace {
     private String altitudeHigh;
     private String altitudeLow;
     private List<PolygonPoint> polygonPoints;
+    private List<Circle> circles;
+    private List<Arc> arcs;
 
     public AirspaceClass getAirspaceClass() {
         return airspaceClass;
@@ -58,6 +60,22 @@ public class Airspace {
             polygonPoints = new ArrayList<>();
         }
         polygonPoints.add(polygonPoint);
+    }
+
+    public List<Circle> getCircles() {
+        return circles;
+    }
+
+    public void setCircles(List<Circle> circles) {
+        this.circles = circles;
+    }
+
+    public List<Arc> getArcs() {
+        return arcs;
+    }
+
+    public void setArcs(List<Arc> arcs) {
+        this.arcs = arcs;
     }
 
     @NonNull

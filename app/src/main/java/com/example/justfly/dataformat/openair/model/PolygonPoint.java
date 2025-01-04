@@ -4,20 +4,20 @@ import androidx.annotation.NonNull;
 
 public class PolygonPoint {
 
-    private double lat;
-    private double lon;
+    private final double latitude;
+    private final double longitude;
 
-    public PolygonPoint(double lat, double lon) {
-        this.lat = lat;
-        this.lon = lon;
+    public PolygonPoint(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     @NonNull
     @Override
     public String toString() {
         return "PolygonPoint{" +
-                "lat=" + lat +
-                ", lon=" + lon +
+                "lat=" + latitude +
+                ", lon=" + longitude +
                 '}';
     }
 }

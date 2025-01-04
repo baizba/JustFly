@@ -2,19 +2,19 @@ package com.example.justfly.dataformat.openair.parser;
 
 import com.example.justfly.dataformat.openair.model.Airspace;
 import com.example.justfly.dataformat.openair.model.AirspaceClass;
+import com.example.justfly.dataformat.openair.model.Arc;
+import com.example.justfly.dataformat.openair.model.Circle;
+import com.example.justfly.dataformat.openair.model.DrawingDirection;
 import com.example.justfly.dataformat.openair.model.Openair;
 import com.example.justfly.dataformat.openair.model.PolygonPoint;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class OpenairParser {
 
-    public static final Pattern COORDINATES_PATTERN = Pattern.compile("(\\d{1,2}:\\d{1,2}:\\d{1,2})\\s+(N|S)\\s+(\\d{1,3}:\\d{1,2}:\\d{1,2})\\s+(E|W)");
-    public static final String DMS_SEPARATOR = ":";
+    private static final String EMPTY = "";
 
     /*
      * Steps:
@@ -33,11 +33,13 @@ public class OpenairParser {
         List<List<String>> airspaceBlocks = new ArrayList<>();
         for (String line : cleanOpenair) {
             if (line.startsWith("AC")) {
+                //if the line starts with AC that means we are reading a new Airspace block
                 airspaceBlocks.add(new ArrayList<>());
             }
             if (airspaceBlocks.isEmpty()) {
                 throw new IllegalStateException("airspace blocks empty, openair data did ont start with AC");
             }
+            // the lines are always added to the last active airspace block
             airspaceBlocks.get(airspaceBlocks.size() - 1).add(line);
         }
 
@@ -52,59 +54,130 @@ public class OpenairParser {
     }
 
     private Airspace getAirspace(List<String> airspaceBlock) {
+        //general airspace information
         Airspace airspace = new Airspace();
+        airspace.setAirspaceClass(AirspaceClass.valueOf(getAirspaceElement(airspaceBlock, "AC")));
+        airspace.setAirspaceName(getAirspaceElement(airspaceBlock, "AN"));
+        airspace.setAltitudeHigh(getAirspaceElement(airspaceBlock, "AH"));
+        airspace.setAltitudeLow(getAirspaceElement(airspaceBlock, "AL"));
+
+        //if there are circle airspaces
+        if (airspaceBlock.contains("V X") && airspaceBlock.contains("DC")) {
+            airspace.setCircles(getCircles(airspaceBlock));
+        }
+
+        //if there are arcs in the block
+        if (airspaceBlock.contains("V X") && airspaceBlock.contains("DB")) {
+            airspace.setArcs(getArcs(airspaceBlock));
+        }
+
+        //if we have DB (points)
+        if(airspaceBlock.contains("DP")) {
+            airspace.setPolygonPoints(getPolygonPoints(airspaceBlock));
+        }
+
+        return airspace;
+    }
+
+    private List<PolygonPoint> getPolygonPoints(List<String> airspaceBlock) {
+        return airspaceBlock.stream().map(this::getPolygonPoint).toList();
+    }
+
+    private List<Arc> getArcs(List<String> airspaceBlock) {
+        double centerLat = 0;
+        double centerLon = 0;
+        double startLat = 0;
+        double startLon = 0;
+        double endLat = 0;
+        double endLon = 0;
+        DrawingDirection drawingDirection = null;
+        List<Arc> arcs = new ArrayList<>();
         for (String line : airspaceBlock) {
-            if (line.startsWith("AC")) {
-                String airspaceClass = line.replaceAll("AC\\s*", "");
-                airspace.setAirspaceClass(AirspaceClass.valueOf(airspaceClass));
-            } else if (line.startsWith("AN")) {
-                airspace.setAirspaceName(line.replaceAll("AN\\s*", ""));
-            } else if (line.startsWith("AH")) {
-                airspace.setAltitudeHigh(line.replaceAll("AH\\s*", ""));
-            } else if (line.startsWith("AL")) {
-                airspace.setAltitudeLow(line.replaceAll("AL\\s*", ""));
-            } else if (line.startsWith("DP")) {
-                airspace.addPolygonPoint(getPolygonPoint(line));
+            if (line.startsWith("V X")) {
+                DmsCoordinatesParser dmsCoords = DmsCoordinatesParser.parse(line);
+                centerLat = dmsCoords.getLatitude();
+                centerLon = dmsCoords.getLongitude();
+            } else if (line.startsWith("DB")) {
+                //line example: DB 47:17:55 N 014:50:46 E,47:17:08 N 014:43:54 E
+                String[] arcCoords = line.replaceAll("DB", EMPTY).trim().split(",");
+                startLat = DmsCoordinatesParser.parse(arcCoords[0]).getLatitude();
+                startLon = DmsCoordinatesParser.parse(arcCoords[0]).getLongitude();
+                endLat = DmsCoordinatesParser.parse(arcCoords[1]).getLatitude();
+                endLon = DmsCoordinatesParser.parse(arcCoords[1]).getLongitude();
+            } else if (line.startsWith("V D")) {
+                //there can be a direction: V D=+ or V D=-
+                String directionClean = line.replaceAll("V\\s*D\\s*=", EMPTY).trim();
+                drawingDirection = DrawingDirection.fromSymbol(directionClean);
+            }
+
+            //if we have all the elements for the arc then build arc and reset variables for next arcs (if we have them)
+            if(centerLat != 0 && centerLon != 0 && startLat != 0 && startLon != 0 && endLat != 0 && endLon != 0) {
+                Arc arc = Arc.ArcBuilder
+                        .builder()
+                        .centerLatitude(centerLat)
+                        .centerLongitude(centerLon)
+                        .startLatitude(startLat)
+                        .startLongitude(startLon)
+                        .endLatitude(endLat)
+                        .endLongitude(endLon)
+                        .direction(drawingDirection != null ? drawingDirection : DrawingDirection.CLOCKWISE)
+                        .build();
+                arcs.add(arc);
+
+                //reset variables if we have multiple arcs
+                centerLat = 0;
+                centerLon = 0;
+                startLat = 0;
+                startLon = 0;
+                endLat = 0;
+                drawingDirection = null;
             }
         }
-        return airspace;
+        return arcs;
+    }
+
+    private List<Circle> getCircles(List<String> airspaceBlock) {
+        double lat = 0;
+        double lon = 0;
+        double radius = 0;
+        List<Circle> circles = new ArrayList<>();
+        for (String line : airspaceBlock) {
+            if (line.startsWith("V X")) {
+                DmsCoordinatesParser dmsCoords = DmsCoordinatesParser.parse(line);
+                lat = dmsCoords.getLatitude();
+                lon = dmsCoords.getLongitude();
+            } else if (line.startsWith("DC")) {
+                radius = Double.parseDouble(line.replaceAll("DC\\s*", EMPTY).trim());
+            }
+
+            /*
+             if we have all the data for a circle then create a circle and add it to the list
+             also reset the variable if maybe there are more circles defined in this block
+             */
+            if (lat != 0 && lon != 0 && radius != 0) {
+                circles.add(new Circle(radius, lat, lon));
+                lat = 0;
+                lon = 0;
+                radius = 0;
+            }
+        }
+        return circles;
+    }
+
+    private String getAirspaceElement(List<String> airspaceBlock, String elementPattern) {
+        return airspaceBlock
+                .stream()
+                .filter(line -> line.startsWith(elementPattern))
+                .findFirst()//find the line starting with this pattern
+                .orElse(EMPTY)//if nothing is found just return empty string
+                .replaceAll(elementPattern, EMPTY)//remove the starting pattern
+                .trim();//trim the string, we do not need blank spaces
     }
 
     private PolygonPoint getPolygonPoint(String line) {
         //example line: DP 47:32:19 N 014:04:58 E
-        Matcher matcher = COORDINATES_PATTERN.matcher(line);
-        if (matcher.find()) {
-            String lat = matcher.group(1);
-            String latDir = matcher.group(2);
-            String lon = matcher.group(3);
-            String lonDir = matcher.group(4);
-
-            //example lat: 47:32:19 N
-            String[] latDegMinSec = lat.split(DMS_SEPARATOR);
-            int latDegrees = Integer.parseInt(latDegMinSec[0]);
-            int latMinutes = Integer.parseInt(latDegMinSec[1]);
-            int latSeconds = Integer.parseInt(latDegMinSec[2]);
-
-            //example lon: 014:04:58 E
-            String[] lonDegMinSec = lon.split(DMS_SEPARATOR);
-            int lonDegrees = Integer.parseInt(lonDegMinSec[0]);
-            int lonMinutes = Integer.parseInt(lonDegMinSec[1]);
-            int lonSeconds = Integer.parseInt(lonDegMinSec[2]);
-
-            double latitude = dmsToDecimal(latDegrees, latMinutes, latSeconds, latDir);
-            double longitude = dmsToDecimal(lonDegrees, lonMinutes, lonSeconds, lonDir);
-
-            return new PolygonPoint(latitude, longitude);
-        }
-        throw new IllegalArgumentException("Invalid line format: " + line);
+        DmsCoordinatesParser dmsCoords = DmsCoordinatesParser.parse(line);
+        return new PolygonPoint(dmsCoords.getLatitude(), dmsCoords.getLongitude());
     }
 
-    private double dmsToDecimal(int degrees, int minutes, int seconds, String direction) {
-        double decimal = degrees + (minutes / 60.0) + (seconds / 3600.0);
-        // Adjust for direction
-        if (direction.equalsIgnoreCase("S") || direction.equalsIgnoreCase("W")) {
-            decimal = -decimal;
-        }
-        return decimal;
-    }
 }

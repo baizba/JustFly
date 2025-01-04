@@ -6,21 +6,21 @@
 * ==============================================================================
 * ACHTUNG
 * Diese OpenAir-Datei wurde vom Luftfahrtinformationsdienst der Austro Control
-* auf Grundlage des österreichischen Luftfahrthandbuches (AIP) erstellt. 
+* auf Grundlage des ï¿½sterreichischen Luftfahrthandbuches (AIP) erstellt. 
 * 
-* Austro Control übernimmt keine Haftung und keine Zusagen für die
-* ursprüngliche, gegenwärtige oder künftige Richtigkeit, Vollständigkeit sowie
-* Funktionalität bzw. Verwendbarkeit der OpenAir-Datei. Die Nutzung erfolgt auf
+* Austro Control ï¿½bernimmt keine Haftung und keine Zusagen fï¿½r die
+* ursprï¿½ngliche, gegenwï¿½rtige oder kï¿½nftige Richtigkeit, Vollstï¿½ndigkeit sowie
+* Funktionalitï¿½t bzw. Verwendbarkeit der OpenAir-Datei. Die Nutzung erfolgt auf
 * eigene Gefahr und Kosten des jeweiligen Nutzers. Es besteht keine Pflicht der
 * Austro Control zur Aktualisierung bzw. Wartung der Daten in der OpenAir-Datei.
 * Der Inhalt der OpenAir-Datei bzw. ihre Nutzung ersetzt nicht die gesetzlich
 * vorgesehene Flugvorbereitung, insbesondere nicht die Beachtung der aktuellen
-* Ausgabe der AIP Österreich, sowie AIP Supplements, NOTAMs und AICs und ist
-* somit nur ergänzend zu den luftfahrtüblichen Verlautbarungen zu verwenden.
+* Ausgabe der AIP ï¿½sterreich, sowie AIP Supplements, NOTAMs und AICs und ist
+* somit nur ergï¿½nzend zu den luftfahrtï¿½blichen Verlautbarungen zu verwenden.
 * Die kommerzielle Nutzung der OpenAir-Datei und der darin enthaltenen Daten ist
 * nicht gestattet.
 * 
-* Anregungen und Wünsche bitte an: aim.sdm@austrocontrol.at
+* Anregungen und Wï¿½nsche bitte an: aim.sdm@austrocontrol.at
 * 
 * Datenquelle: http://eaip.austrocontrol.at/
 * Website: https://www.austrocontrol.at/piloten/vor_dem_flug/aim_produkte/luftraumstruktur
@@ -55,15 +55,15 @@
 * Die Koordinaten wurden entsprechend den Formatvorgaben der "OpenAir(TM)
 * Airspace and Terrain description language" aufbereitet.
 * 
-* Aus Gründen der Hardware-Performance der Bordgeräte wurde die Staatsgrenze
-* Österreichs stark vereinfacht. Die lateralen Abweichungen zur tatsächlichen
+* Aus Grï¿½nden der Hardware-Performance der Bordgerï¿½te wurde die Staatsgrenze
+* ï¿½sterreichs stark vereinfacht. Die lateralen Abweichungen zur tatsï¿½chlichen
 * Grenze sind aber kleiner als 1000m.
 * 
-* MTAs sind größtenteils innerhalb freigabepflichtiger (C, D)
-* ziviler Lufträume gelegene militärische Bereiche. D.h. mit einer Aktivierung
-* von MTAs steht der Luftraum temporär unter militärischer Luftraumkontrolle, es
+* MTAs sind grï¿½ï¿½tenteils innerhalb freigabepflichtiger (C, D)
+* ziviler Luftrï¿½ume gelegene militï¿½rische Bereiche. D.h. mit einer Aktivierung
+* von MTAs steht der Luftraum temporï¿½r unter militï¿½rischer Luftraumkontrolle, es
 * bleibt jedoch ein freigabepflichtiger Luftraum gleicher Klasse.
-* Die Aufnahme der MTAs in die Hauptdatei würde zu Unübersichtlichkeit führen. 
+* Die Aufnahme der MTAs in die Hauptdatei wï¿½rde zu Unï¿½bersichtlichkeit fï¿½hren. 
 * Die MTAs werden daher mit einer getrennten Datei bereitgestellt. 
 * 
 *
@@ -2289,7 +2289,7 @@ DP 47:47:48 N 016:15:30 E
 DP 47:48:32 N 016:14:01 E
 
 AC R
-AN RMZ VOESLAU (VÖSLAU RADIO:118.605)
+AN RMZ VOESLAU (Vï¿½SLAU RADIO:118.605)
 AH 3000 ft msl
 AL SFC
 DP 47:55:00 N 016:17:45 E
@@ -4169,6 +4169,7 @@ V X=47:19:30 N 014:46:51 E
 DB 47:20:01 N 014:51:21 E,47:17:55 N 014:50:46 E
 DP 47:17:55 N 014:50:46 E
 V D=+
+
 V X=47:19:30 N 014:46:51 E
 DB 47:17:08 N 014:43:54 E,47:18:59 N 014:42:21 E
 DP 47:18:59 N 014:42:21 E
