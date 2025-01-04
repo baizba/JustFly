@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Airspace {
 
@@ -81,12 +82,17 @@ public class Airspace {
     @NonNull
     @Override
     public String toString() {
-        return "Airspace{" +
-                "airspaceClass=" + airspaceClass +
-                ", airspaceName='" + airspaceName + '\'' +
-                ", altitudeHigh='" + altitudeHigh + '\'' +
-                ", altitudeLow='" + altitudeLow + '\'' +
-                ", polygonPoints=" + polygonPoints +
-                '}';
+        return String
+                .format(
+                        Locale.GERMANY,
+                        "Airspace{airspaceClass=%s, airspaceName='%s', altitudeHigh='%s', altitudeLow='%s', circles=%s, arcs=%s, polygonPoints=%s}",
+                        airspaceClass,
+                        airspaceName,
+                        altitudeHigh,
+                        altitudeLow,
+                        circles,
+                        arcs,
+                        polygonPoints
+                );
     }
 }

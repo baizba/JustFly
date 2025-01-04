@@ -2,6 +2,8 @@ package com.example.justfly.dataformat.openair.model;
 
 import androidx.annotation.NonNull;
 
+import java.util.Locale;
+
 public class PolygonPoint {
 
     private final double latitude;
@@ -15,9 +17,6 @@ public class PolygonPoint {
     @NonNull
     @Override
     public String toString() {
-        return "PolygonPoint{" +
-                "lat=" + latitude +
-                ", lon=" + longitude +
-                '}';
+        return String.format(Locale.GERMANY, "PolygonPoint{lat=%f, lon=%f}", latitude, longitude);
     }
 }

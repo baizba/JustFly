@@ -62,25 +62,29 @@ public class OpenairParser {
         airspace.setAltitudeLow(getAirspaceElement(airspaceBlock, "AL"));
 
         //if there are circle airspaces
-        if (airspaceBlock.contains("V X") && airspaceBlock.contains("DC")) {
+        if (airspaceBlockContainsElement(airspaceBlock, "V X") && airspaceBlockContainsElement(airspaceBlock, "DC")) {
             airspace.setCircles(getCircles(airspaceBlock));
         }
 
         //if there are arcs in the block
-        if (airspaceBlock.contains("V X") && airspaceBlock.contains("DB")) {
+        if (airspaceBlockContainsElement(airspaceBlock, "V X") && airspaceBlockContainsElement(airspaceBlock, "DB")) {
             airspace.setArcs(getArcs(airspaceBlock));
         }
 
         //if we have DB (points)
-        if(airspaceBlock.contains("DP")) {
+        if (airspaceBlockContainsElement(airspaceBlock, "DP")) {
             airspace.setPolygonPoints(getPolygonPoints(airspaceBlock));
         }
 
         return airspace;
     }
 
+    private boolean airspaceBlockContainsElement(List<String> airspaceBlock, String elementPattern) {
+        return airspaceBlock.stream().anyMatch(line -> line.startsWith(elementPattern));
+    }
+
     private List<PolygonPoint> getPolygonPoints(List<String> airspaceBlock) {
-        return airspaceBlock.stream().map(this::getPolygonPoint).toList();
+        return airspaceBlock.stream().filter(line -> line.startsWith("DP")).map(this::getPolygonPoint).toList();
     }
 
     private List<Arc> getArcs(List<String> airspaceBlock) {
@@ -111,7 +115,7 @@ public class OpenairParser {
             }
 
             //if we have all the elements for the arc then build arc and reset variables for next arcs (if we have them)
-            if(centerLat != 0 && centerLon != 0 && startLat != 0 && startLon != 0 && endLat != 0 && endLon != 0) {
+            if (centerLat != 0 && centerLon != 0 && startLat != 0 && startLon != 0 && endLat != 0 && endLon != 0) {
                 Arc arc = Arc.ArcBuilder
                         .builder()
                         .centerLatitude(centerLat)
