@@ -13,15 +13,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.justfly.dataformat.openair.model.Openair;
-import com.example.justfly.dataformat.openair.parser.OpenairParser;
 import com.example.justfly.livedata.GpsData;
 import com.example.justfly.map.AirspaceView;
+import com.example.justfly.map.MapConstants;
 import com.example.justfly.map.MapPresenter;
 import com.example.justfly.overlay.DirectionLineOverlay;
-import com.example.justfly.util.ResourceFileUtil;
 
 import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.XYTileSource;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Polygon;
@@ -35,16 +35,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class MapFragment extends Fragment implements AirspaceView {
+public class MapFragment extends Fragment implements AirspaceView, MapConstants {
 
-    public static final int MIN_ZOOM = 4;
-    public static final int MAX_ZOOM = 11;
-    public static final int TILE_SIZE = 512;
-    public static final String FILENAME_ENDING = ".png";
-    public static final String OPEN_VFR_SOURCE_NAME = "openvfr";
-    public static final XYTileSource OPEN_VFR = new XYTileSource(OPEN_VFR_SOURCE_NAME, MIN_ZOOM, MAX_ZOOM, TILE_SIZE, FILENAME_ENDING, new String[]{""});
-
-    private MapPresenter mapPresenter;
     private MyLocationNewOverlay myLocationNewOverlay;
     private Consumer<GpsData> gpsDataConsumer;
     private MapView mapView;
@@ -55,12 +47,12 @@ public class MapFragment extends Fragment implements AirspaceView {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         handlePreferences(Configuration.getInstance()::load, view.getContext());
         MainActivity mainActivity = (MainActivity) Objects.requireNonNull(getActivity(), "MainActivity cannot be null");
-        mapView = view.findViewById(R.id.map);
-        initializeMap();
+        mapView = initializeMap(view);
         gpsDataConsumer = mainActivity::updateGpsData;
-        mapPresenter = new MapPresenter(mapView, this);
+        MapPresenter mapPresenter = new MapPresenter(this);
+        mapPresenter.showAirspaces();
         view.findViewById(R.id.btnFollowMe).setOnClickListener(v -> this.enableFollowMyLocation());
-        view.findViewById(R.id.btnSwitchMap).setOnClickListener(v -> mapPresenter.switchMapSource());
+        view.findViewById(R.id.btnSwitchMap).setOnClickListener(v -> this.switchMapSource());
         return view;
     }
 
@@ -107,10 +99,7 @@ public class MapFragment extends Fragment implements AirspaceView {
     }
 
     @Override
-    public void showAirspaces() {
-        List<String> openairData = ResourceFileUtil.readResourceFile("openair/lo_airspaces.openair.txt");
-        OpenairParser parser = new OpenairParser();
-        Openair openair = parser.parse(openairData);
+    public void showAirspaces(Openair openair) {
         List<Polygon> polygonAirspaces = openair.getAirspaces()
                 .stream()
                 .filter(airspace -> airspace.getPolygonPoints().size() > 1)
@@ -129,6 +118,15 @@ public class MapFragment extends Fragment implements AirspaceView {
         mapView.getOverlays().addAll(polygonAirspaces);
     }
 
+    private void switchMapSource() {
+        ITileSource tileSource = mapView.getTileProvider().getTileSource();
+        if (OPEN_VFR.name().equals(tileSource.name())) {
+            mapView.setTileSource(TileSourceFactory.OpenTopo);
+        } else {
+            mapView.setTileSource(OPEN_VFR);
+        }
+    }
+
     private void handlePreferences(BiConsumer<Context, SharedPreferences> operation, Context ctx) {
         String preferenceFileName = ctx.getPackageName() + "_preferences";
         SharedPreferences sharedPreferences = ctx.getSharedPreferences(preferenceFileName, Context.MODE_PRIVATE);
@@ -139,7 +137,8 @@ public class MapFragment extends Fragment implements AirspaceView {
         myLocationNewOverlay.enableFollowLocation();
     }
 
-    private void initializeMap() {
+    private MapView initializeMap(View view) {
+        MapView mapView = view.findViewById(R.id.map);
         mapView.setTileSource(OPEN_VFR);
         mapView.setUseDataConnection(false);
         mapView.getController().setZoom(11.0);
@@ -147,5 +146,6 @@ public class MapFragment extends Fragment implements AirspaceView {
         mapView.setMaxZoomLevel(14.0);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
+        return mapView;
     }
 }
