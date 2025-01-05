@@ -84,7 +84,9 @@ public class OpenairParser {
     }
 
     private List<PolygonPoint> getPolygonPoints(List<String> airspaceBlock) {
-        return airspaceBlock.stream().filter(line -> line.startsWith("DP")).map(this::getPolygonPoint).toList();
+        return airspaceBlock.stream()
+                .filter(line -> line.startsWith("DP")).map(this::getPolygonPoint)
+                .collect(Collectors.toList());
     }
 
     private List<Arc> getArcs(List<String> airspaceBlock) {

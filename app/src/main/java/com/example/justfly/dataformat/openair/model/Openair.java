@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Openair {
 
@@ -13,8 +14,10 @@ public class Openair {
         return airspaces;
     }
 
-    public void setAirspaces(List<Airspace> airspaces) {
-        this.airspaces = airspaces;
+    public List<Airspace> getAirspacesByName(String airspaceName) {
+        return airspaces.stream()
+                .filter(airspace -> airspace.getAirspaceName().equalsIgnoreCase(airspaceName))
+                .collect(Collectors.toList());
     }
 
     public void addAirspace(Airspace airspace) {
