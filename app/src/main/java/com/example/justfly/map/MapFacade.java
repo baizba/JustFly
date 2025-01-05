@@ -76,12 +76,12 @@ public class MapFacade {
         mapView.setMaxZoomLevel(14.0);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
-        initializeMyLocationOverlay();
-        initializeDirectionLine();
-        initializeAirspaces();
+        addMyLocationOverlay();
+        addDirectionLine();
+        addAirspaces();
     }
 
-    private void initializeAirspaces() {
+    private void addAirspaces() {
         List<String> openairData = ResourceFileUtil.readResourceFile("openair/lo_airspaces.openair.txt");
         OpenairParser parser = new OpenairParser();
         Openair openair = parser.parse(openairData);
@@ -100,10 +100,10 @@ public class MapFacade {
                     return polygon;
                 })
                 .collect(Collectors.toList());
-        //mapView.getOverlays().addAll(polygonAirspaces);
+        mapView.getOverlays().addAll(polygonAirspaces);
     }
 
-    private void initializeMyLocationOverlay() {
+    private void addMyLocationOverlay() {
         myLocationNewOverlay = new MyLocationNewOverlay(mapView);
         myLocationNewOverlay.enableMyLocation();
         myLocationNewOverlay.enableFollowLocation();
@@ -122,7 +122,7 @@ public class MapFacade {
         });
     }
 
-    private void initializeDirectionLine() {
+    private void addDirectionLine() {
         DirectionLineOverlay directionLineOverlay = new DirectionLineOverlay(myLocationNewOverlay);
         mapView.getOverlays().add(directionLineOverlay);
     }
