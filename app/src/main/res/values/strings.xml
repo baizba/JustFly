@@ -9,4 +9,5 @@
     <string name="gpsAltitude">Alt:</string>
     <string name="gpsSpeed">GS:</string>
     <string name="gpsNoData">-</string>
+    <string name="changeMapSource">map source</string>
 </resources>
