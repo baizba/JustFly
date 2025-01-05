@@ -2,15 +2,23 @@ package com.example.justfly.map;
 
 import android.os.Build;
 
+import com.example.justfly.dataformat.openair.model.Openair;
+import com.example.justfly.dataformat.openair.parser.OpenairParser;
 import com.example.justfly.livedata.GpsData;
 import com.example.justfly.overlay.DirectionLineOverlay;
+import com.example.justfly.util.ResourceFileUtil;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class MapFacade {
 
@@ -51,6 +59,29 @@ public class MapFacade {
         mapView.setTilesScaledToDpi(true);
         initializeMyLocationOverlay();
         initializeDirectionLine();
+        initializeAirspaces();
+    }
+
+    private void initializeAirspaces() {
+        List<String> openairData = ResourceFileUtil.readResourceFile("openair/lo_airspaces.openair.txt");
+        OpenairParser parser = new OpenairParser();
+        Openair openair = parser.parse(openairData);
+        List<Polygon> polygonAirspaces = openair.getAirspaces()
+                .stream()
+                .filter(airspace -> airspace.getPolygonPoints().size() > 1)
+                .map(airspace -> {
+                    List<GeoPoint> geoPoints = airspace
+                            .getPolygonPoints()
+                            .stream()
+                            .map(polygonPoint -> new GeoPoint(polygonPoint.getLatitude(), polygonPoint.getLongitude()))
+                            .collect(Collectors.toCollection(ArrayList::new));
+                    geoPoints.add(geoPoints.get(0));//add the first point at the end to add to make sure the overlay is closed
+                    Polygon polygon = new Polygon();
+                    polygon.setPoints(geoPoints);
+                    return polygon;
+                })
+                .collect(Collectors.toList());
+        //mapView.getOverlays().addAll(polygonAirspaces);
     }
 
     private void initializeMyLocationOverlay() {

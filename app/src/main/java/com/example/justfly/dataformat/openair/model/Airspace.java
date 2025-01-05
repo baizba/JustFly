@@ -2,6 +2,7 @@ package com.example.justfly.dataformat.openair.model;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -48,7 +49,7 @@ public class Airspace {
     }
 
     public List<PolygonPoint> getPolygonPoints() {
-        return polygonPoints;
+        return polygonPoints != null ? polygonPoints : new ArrayList<>();
     }
 
     public void setPolygonPoints(List<PolygonPoint> polygonPoints) {
