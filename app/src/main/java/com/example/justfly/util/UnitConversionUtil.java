@@ -1,4 +1,4 @@
-package com.example.justfly.livedata;
+package com.example.justfly.util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

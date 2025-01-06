@@ -2,7 +2,6 @@ package com.example.justfly;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.justfly.dataformat.openair.model.Openair;
-import com.example.justfly.livedata.GpsData;
 import com.example.justfly.map.AirspaceView;
 import com.example.justfly.map.MapConstants;
 import com.example.justfly.map.MapPresenter;
@@ -25,20 +23,16 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Polygon;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MapFragment extends Fragment implements AirspaceView, MapConstants {
 
     private MyLocationNewOverlay myLocationNewOverlay;
-    private Consumer<GpsData> gpsDataConsumer;
     private MapView mapView;
 
     @Nullable
@@ -46,9 +40,7 @@ public class MapFragment extends Fragment implements AirspaceView, MapConstants 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         handlePreferences(Configuration.getInstance()::load, view.getContext());
-        MainActivity mainActivity = (MainActivity) Objects.requireNonNull(getActivity(), "MainActivity cannot be null");
         mapView = initializeMap(view);
-        gpsDataConsumer = mainActivity::updateGpsData;
         MapPresenter mapPresenter = new MapPresenter(this);
         mapPresenter.showAirspaces();
         view.findViewById(R.id.btnFollowMe).setOnClickListener(v -> this.enableFollowMyLocation());
@@ -82,18 +74,6 @@ public class MapFragment extends Fragment implements AirspaceView, MapConstants 
         myLocationNewOverlay.enableMyLocation();
         myLocationNewOverlay.enableFollowLocation();
         mapView.getOverlays().add(myLocationNewOverlay);
-        GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(mapView.getContext());
-        gpsMyLocationProvider.setLocationUpdateMinTime(500);
-        gpsMyLocationProvider.startLocationProvider((location, source) -> {
-            GpsData gpsData = new GpsData();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && location.hasMslAltitude()) {
-                gpsData.setAltitude(location.getMslAltitudeMeters());
-            } else {
-                gpsData.setAltitude(location.getAltitude());
-            }
-            gpsData.setSpeed(location.getSpeed());
-            gpsDataConsumer.accept(gpsData);
-        });
         DirectionLineOverlay directionLineOverlay = new DirectionLineOverlay(myLocationNewOverlay);
         mapView.getOverlays().add(directionLineOverlay);
     }
