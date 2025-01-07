@@ -1,5 +1,6 @@
 package com.example.justfly;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +9,9 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
-import com.example.justfly.livedata.UnitConversionUtil;
+import com.example.justfly.util.UnitConversionUtil;
+
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 
 import java.util.Locale;
 
@@ -69,17 +72,22 @@ public class GpsDataFragment extends Fragment {
     private void subscribeToGpsUpdates(View view) {
         TextView speedTextView = view.findViewById(R.id.textSpeed);
         TextView altitudeTextView = view.findViewById(R.id.textAltitude);
-        MainActivity mainActivity = (MainActivity) getActivity();
-        Locale defaultLocale = Locale.getDefault();
-        assert mainActivity != null;
-        mainActivity.getGpsData().observe(
-                getViewLifecycleOwner(),
-                gpsData -> {
-                    long knots = UnitConversionUtil.msToKnots(gpsData.getSpeed());
-                    long feet = UnitConversionUtil.metersToFeet(gpsData.getAltitude());
-                    speedTextView.setText(String.format(defaultLocale, "%d KT", knots));
-                    altitudeTextView.setText(String.format(defaultLocale, "%d FT", feet));
-                }
-        );
+        MainActivity mainActivity = (MainActivity) requireActivity();
+        Locale defaultLocale = Locale.GERMANY;
+
+        GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(mainActivity.getBaseContext());
+        gpsMyLocationProvider.setLocationUpdateMinTime(500);
+        gpsMyLocationProvider.startLocationProvider((location, source) -> {
+            double altitude = 0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && location.hasMslAltitude()) {
+                altitude = location.getMslAltitudeMeters();
+            } else {
+                altitude = location.getAltitude();
+            }
+            long knots = UnitConversionUtil.msToKnots(location.getSpeed());
+            long feet = UnitConversionUtil.metersToFeet(altitude);
+            speedTextView.setText(String.format(defaultLocale, "%d KT", knots));
+            altitudeTextView.setText(String.format(defaultLocale, "%d FT", feet));
+        });
     }
 }
