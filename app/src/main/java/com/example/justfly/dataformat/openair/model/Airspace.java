@@ -57,7 +57,7 @@ public class Airspace {
     }
 
     public List<Circle> getCircles() {
-        return circles;
+        return circles != null ? circles : new ArrayList<>();
     }
 
     public void setCircles(List<Circle> circles) {

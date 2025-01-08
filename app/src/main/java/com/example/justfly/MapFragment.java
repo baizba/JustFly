@@ -16,6 +16,7 @@ import com.example.justfly.map.AirspaceView;
 import com.example.justfly.map.MapConstants;
 import com.example.justfly.map.MapPresenter;
 import com.example.justfly.overlay.DirectionLineOverlay;
+import com.example.justfly.util.GeoCircleUtil;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
@@ -80,6 +81,10 @@ public class MapFragment extends Fragment implements AirspaceView, MapConstants 
 
     @Override
     public void showAirspaces(Openair openair) {
+        /*
+        these are polygon airspaces
+        One polygonal airspace produces one polygon for map
+         */
         List<Polygon> polygonAirspaces = openair.getAirspaces()
                 .stream()
                 .filter(airspace -> airspace.getPolygonPoints().size() > 1)
@@ -96,6 +101,28 @@ public class MapFragment extends Fragment implements AirspaceView, MapConstants 
                 })
                 .collect(Collectors.toList());
         mapView.getOverlays().addAll(polygonAirspaces);
+
+        /*
+        these are circle airspaces
+        one airspace can have multiple circles in theory
+        and that is why one airspace produces list of polygons (circles)
+         */
+        openair.getAirspaces()
+                .stream()
+                .filter(airspace -> !airspace.getCircles().isEmpty())
+                .map(airspace -> airspace.getCircles()
+                        .stream()
+                        .map(circle -> {
+                            List<GeoPoint> circlePoints = GeoCircleUtil.getCirclePoints(circle);
+                            Polygon circlePolygon = new Polygon();
+                            circlePolygon.setPoints(circlePoints);
+                            return circlePolygon;
+                        })
+                        .collect(Collectors.toList())
+                )
+                .forEach(mapView.getOverlays()::addAll);
+
+        mapView.getOverlays();
     }
 
     private void switchMapSource() {

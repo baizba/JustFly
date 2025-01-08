@@ -22,4 +22,11 @@ public class UnitConversionUtil {
                 .intValue();
     }
 
+    public static long milesToMeters(double miles) {
+        return BigDecimal.valueOf(miles)
+                .multiply(BigDecimal.valueOf(1609.34))
+                .setScale(0, RoundingMode.HALF_UP)
+                .intValue();
+    }
+
 }
