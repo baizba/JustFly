@@ -57,7 +57,7 @@ public class Airspace {
     }
 
     public List<Circle> getCircles() {
-        return circles;
+        return circles != null ? circles : new ArrayList<>();
     }
 
     public void setCircles(List<Circle> circles) {
@@ -65,7 +65,7 @@ public class Airspace {
     }
 
     public List<Arc> getArcs() {
-        return arcs;
+        return arcs != null ? arcs : new ArrayList<>();
     }
 
     public void setArcs(List<Arc> arcs) {
