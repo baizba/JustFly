@@ -7,6 +7,11 @@ import org.osmdroid.util.GeoPoint;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility class to generate points for a circle.
+ * We have a circle with a center point and a radius
+ * but for OSM we need a list of points to draw a polygon.
+ */
 public class GeoCircleUtil {
 
     public static List<GeoPoint> getCirclePoints(Circle circle) {

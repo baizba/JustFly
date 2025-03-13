@@ -12,24 +12,21 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.justfly.dataformat.openair.model.Openair;
+import com.example.justfly.dataformat.openair.overlay.OpenairToOverlayMapper;
 import com.example.justfly.map.AirspaceView;
 import com.example.justfly.map.MapConstants;
 import com.example.justfly.map.MapPresenter;
 import com.example.justfly.overlay.DirectionLineOverlay;
-import com.example.justfly.util.GeoCircleUtil;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 public class MapFragment extends Fragment implements AirspaceView, MapConstants {
 
@@ -81,48 +78,9 @@ public class MapFragment extends Fragment implements AirspaceView, MapConstants 
 
     @Override
     public void showAirspaces(Openair openair) {
-        /*
-        these are polygon airspaces
-        One polygonal airspace produces one polygon for map
-         */
-        List<Polygon> polygonAirspaces = openair.getAirspaces()
-                .stream()
-                .filter(airspace -> airspace.getPolygonPoints().size() > 1)
-                .map(airspace -> {
-                    List<GeoPoint> geoPoints = airspace
-                            .getPolygonPoints()
-                            .stream()
-                            .map(polygonPoint -> new GeoPoint(polygonPoint.getLatitude(), polygonPoint.getLongitude()))
-                            .collect(Collectors.toCollection(ArrayList::new));
-                    geoPoints.add(geoPoints.get(0));//add the first point at the end to add to make sure the overlay is closed
-                    Polygon polygon = new Polygon();
-                    polygon.setPoints(geoPoints);
-                    return polygon;
-                })
-                .collect(Collectors.toList());
-        mapView.getOverlays().addAll(polygonAirspaces);
-
-        /*
-        these are circle airspaces
-        one airspace can have multiple circles in theory
-        and that is why one airspace produces list of polygons (circles)
-         */
-        openair.getAirspaces()
-                .stream()
-                .filter(airspace -> !airspace.getCircles().isEmpty())
-                .map(airspace -> airspace.getCircles()
-                        .stream()
-                        .map(circle -> {
-                            List<GeoPoint> circlePoints = GeoCircleUtil.getCirclePoints(circle);
-                            Polygon circlePolygon = new Polygon();
-                            circlePolygon.setPoints(circlePoints);
-                            return circlePolygon;
-                        })
-                        .collect(Collectors.toList())
-                )
-                .forEach(mapView.getOverlays()::addAll);
-
-        mapView.getOverlays();
+        OpenairToOverlayMapper openairToOverlayMapper = new OpenairToOverlayMapper();
+        List<Polygon> overlays = openairToOverlayMapper.getOverlays(openair);
+        mapView.getOverlays().addAll(overlays);
     }
 
     private void switchMapSource() {
