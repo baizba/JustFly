@@ -14,21 +14,20 @@ import androidx.fragment.app.Fragment;
 import com.example.justfly.dataformat.openair.model.Openair;
 import com.example.justfly.dataformat.openair.overlay.OpenairToOverlayMapper;
 import com.example.justfly.map.AirspaceView;
-import com.example.justfly.map.MapConstants;
 import com.example.justfly.map.MapPresenter;
+import com.example.justfly.map.MapTileOverlays;
 import com.example.justfly.overlay.DirectionLineOverlay;
 
 import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.ITileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Polygon;
+import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.List;
 import java.util.function.BiConsumer;
 
-public class MapFragment extends Fragment implements AirspaceView, MapConstants {
+public class MapFragment extends Fragment implements AirspaceView {
 
     private MyLocationNewOverlay myLocationNewOverlay;
     private MapView mapView;
@@ -84,12 +83,11 @@ public class MapFragment extends Fragment implements AirspaceView, MapConstants 
     }
 
     private void switchMapSource() {
-        ITileSource tileSource = mapView.getTileProvider().getTileSource();
-        if (OPEN_VFR.name().equals(tileSource.name())) {
-            mapView.setTileSource(TileSourceFactory.OpenTopo);
-        } else {
-            mapView.setTileSource(OPEN_VFR);
-        }
+        mapView
+                .getOverlays()
+                .stream()
+                .filter(o -> o instanceof TilesOverlay)
+                .forEach(o -> o.setEnabled(!o.isEnabled()));
     }
 
     private void handlePreferences(BiConsumer<Context, SharedPreferences> operation, Context ctx) {
@@ -104,13 +102,18 @@ public class MapFragment extends Fragment implements AirspaceView, MapConstants 
 
     private MapView initializeMap(View view) {
         MapView mapView = view.findViewById(R.id.map);
-        mapView.setTileSource(OPEN_VFR);
+        //mapView.setTileSource(OPEN_VFR);
         mapView.setUseDataConnection(false);
         mapView.getController().setZoom(11.0);
         mapView.setMinZoomLevel(4.0);
         mapView.setMaxZoomLevel(14.0);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
+
+        //add map tiles
+        MapTileOverlays mapTileOverlays = new MapTileOverlays(mapView.getContext());
+        mapView.getOverlays().addAll(mapTileOverlays.getOverlays().values());
+
         return mapView;
     }
 }
