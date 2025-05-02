@@ -16,57 +16,72 @@ import java.util.List;
 public class GeoArcUtil {
     private static final int EARTH_RADIUS_METERS = 6371000;
 
-    public static List<GeoPoint> getArcPoints(Arc arc) {
-        // Convert degrees to radians
-        double centerLatRad = Math.toRadians(arc.getCenterLatitude());
-        double centerLonRad = Math.toRadians(arc.getCenterLongitude());
-        double startLatRad = Math.toRadians(arc.getStartLatitude());
-        double startLonRad = Math.toRadians(arc.getStartLongitude());
-        double endLatRad = Math.toRadians(arc.getEndLatitude());
-        double endLonRad = Math.toRadians(arc.getEndLongitude());
-
-        // Calculate the radius (distance between center and start)
-        double radius = haversineDistance(
-                arc.getCenterLatitude(),
-                arc.getCenterLongitude(),
-                arc.getStartLatitude(),
-                arc.getStartLongitude());
-
-        // Calculate start and end angles
-        double startAngle = Math.atan2(Math.sin(startLonRad - centerLonRad) * Math.cos(startLatRad),
-                Math.cos(centerLatRad) * Math.sin(startLatRad) -
-                        Math.sin(centerLatRad) * Math.cos(startLatRad) *
-                                Math.cos(startLonRad - centerLonRad));
-
-        double endAngle = Math.atan2(Math.sin(endLonRad - centerLonRad) * Math.cos(endLatRad),
-                Math.cos(centerLatRad) * Math.sin(endLatRad) -
-                        Math.sin(centerLatRad) * Math.cos(endLatRad) *
-                                Math.cos(endLonRad - centerLonRad));
-
-        // Normalize angles to [0, 2π]
-        if (startAngle < 0) startAngle += 2 * Math.PI;
-        if (endAngle < 0) endAngle += 2 * Math.PI;
-
-        // Determine clockwise or counterclockwise drawing
-        boolean isClockwise = endAngle > startAngle;
-
-        // Generate points along the arc
+    public static List<GeoPoint> getArcPoints(Arc arc, boolean isClockwise) {
         List<GeoPoint> arcPoints = new ArrayList<>();
-        int pointsCount = 100; // More points = smoother arc
-        double step = (isClockwise ? 1 : -1) * Math.abs(endAngle - startAngle) / pointsCount;
 
-        for (int i = 0; i <= pointsCount; i++) {
-            double angle = startAngle + i * step;
-            double lat = arc.getCenterLatitude() + (radius / EARTH_RADIUS_METERS) * Math.cos(angle); // Earth's radius in meters
-            double lon = arc.getCenterLongitude() + (radius / EARTH_RADIUS_METERS) * Math.sin(angle) / Math.cos(centerLatRad);
-            arcPoints.add(new GeoPoint(Math.toDegrees(lat), Math.toDegrees(lon)));
+        // Calculate radius in meters (from center to start point)
+        double radius = haversineDistance(
+                arc.getCenterLatitude(), arc.getCenterLongitude(),
+                arc.getStartLatitude(), arc.getStartLongitude());
+
+        // Compute initial and final bearings (in degrees)
+        double startBearing = calculateBearing(arc.getCenterLatitude(), arc.getCenterLongitude(),
+                arc.getStartLatitude(), arc.getStartLongitude());
+        double endBearing = calculateBearing(arc.getCenterLatitude(), arc.getCenterLongitude(),
+                arc.getEndLatitude(), arc.getEndLongitude());
+
+        // Normalize to [0, 360)
+        startBearing = (startBearing + 360) % 360;
+        endBearing = (endBearing + 360) % 360;
+
+        // Handle wrap-around if needed
+        double angleStep = 1.0; // 1° step = ~100 points for 90° arc
+        double totalAngle = (isClockwise)
+                ? ((endBearing >= startBearing) ? endBearing - startBearing : 360 - (startBearing - endBearing))
+                : ((startBearing >= endBearing) ? startBearing - endBearing : 360 - (endBearing - startBearing));
+
+        int steps = (int) (totalAngle / angleStep);
+        for (int i = 0; i <= steps; i++) {
+            double bearingDeg = isClockwise
+                    ? (startBearing + i * angleStep) % 360
+                    : (startBearing - i * angleStep + 360) % 360;
+
+            GeoPoint point = calculateDestinationPoint(
+                    arc.getCenterLatitude(), arc.getCenterLongitude(),
+                    bearingDeg, radius);
+            arcPoints.add(point);
         }
 
-        // Create and add Polyline to the map
-        //Polygon arcPolyline = new Polygon();
-        //arcPolyline.setPoints(arcPoints);
-
         return arcPoints;
+    }
+
+    private static GeoPoint calculateDestinationPoint(double lat, double lon, double bearingDeg, double distanceMeters) {
+        double angularDistance = distanceMeters / EARTH_RADIUS_METERS;
+        double bearingRad = Math.toRadians(bearingDeg);
+        double latRad = Math.toRadians(lat);
+        double lonRad = Math.toRadians(lon);
+
+        double destLatRad = Math.asin(Math.sin(latRad) * Math.cos(angularDistance) +
+                Math.cos(latRad) * Math.sin(angularDistance) * Math.cos(bearingRad));
+
+        double destLonRad = lonRad + Math.atan2(
+                Math.sin(bearingRad) * Math.sin(angularDistance) * Math.cos(latRad),
+                Math.cos(angularDistance) - Math.sin(latRad) * Math.sin(destLatRad)
+        );
+
+        return new GeoPoint(Math.toDegrees(destLatRad), Math.toDegrees(destLonRad));
+    }
+
+    private static double calculateBearing(double lat1, double lon1, double lat2, double lon2) {
+        double lat1Rad = Math.toRadians(lat1);
+        double lat2Rad = Math.toRadians(lat2);
+        double deltaLonRad = Math.toRadians(lon2 - lon1);
+
+        double y = Math.sin(deltaLonRad) * Math.cos(lat2Rad);
+        double x = Math.cos(lat1Rad) * Math.sin(lat2Rad) -
+                Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLonRad);
+
+        return Math.toDegrees(Math.atan2(y, x));
     }
 
     // Calculate distance between two coordinates (Haversine formula)

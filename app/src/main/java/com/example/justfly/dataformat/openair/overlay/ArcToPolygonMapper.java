@@ -19,7 +19,7 @@ public class ArcToPolygonMapper {
         return airspace.getArcs()
                 .stream()
                 .map(arc -> {
-                    List<GeoPoint> arcPoints = GeoArcUtil.getArcPoints(arc);
+                    List<GeoPoint> arcPoints = GeoArcUtil.getArcPoints(arc, true);
                     Polygon arcPolyline = new Polygon();
                     arcPolyline.setPoints(arcPoints);
                     return arcPolyline;
