@@ -24,14 +24,14 @@ public class OpenairToOverlayMapper {
         openair.getAirspaces()
                 .stream()
                 .filter(airspace -> airspace.getPolygonPoints().size() > 1)
-                .map(pointsToPolygonMapper::toPolygons);
-                //.forEach(airspaceOverlays::add);
+                .map(pointsToPolygonMapper::toPolygons)
+                .forEach(airspaceOverlays::add);
 
         openair.getAirspaces()
                 .stream()
                 .filter(airspace -> !airspace.getCircles().isEmpty())
-                .map(circleToPolygonMapper::toPolygons);
-                //.forEach(airspaceOverlays::addAll);
+                .map(circleToPolygonMapper::toPolygons)
+                .forEach(airspaceOverlays::addAll);
 
         openair.getAirspaces()
                 .stream()

@@ -17,24 +17,31 @@ import java.util.List;
  */
 public class ArcToPolygonMapper {
 
+    private static final String TAG = ArcToPolygonMapper.class.getName();
+
     public List<Polygon> toPolygons(Airspace airspace) {
-        String tag = this.getClass().getName();
-        Log.i(tag, "Airspace: " + airspace);
-        Log.i(tag, "Airspace Arcs: " + airspace.getArcs());
+        Log.d(TAG, "Airspace: " + airspace);
+        Log.d(TAG, "Airspace Arcs: " + airspace.getArcs());
 
         if (airspace.getArcs().size() == 1) {
             Arc arc = airspace.getArcs().get(0);
-            List<GeoPoint> arcPoints = GeoArcUtil.getArcPoints(arc);
-            Polygon arcPolyline = new Polygon();
-            arcPolyline.setPoints(arcPoints);
-            return List.of(arcPolyline);
+            List<GeoPoint> points = GeoArcUtil.getArcPoints(arc);
+            Polygon singleArcPolygon = createPolygon(points);
+            return List.of(singleArcPolygon);
         } else if (airspace.getArcs().size() == 2) {
-            Polygon polygon = GeoArcUtil.buildCombinedArcPolygon(airspace);
-            return List.of(polygon);
+            List<GeoPoint> points = GeoArcUtil.buildCombinedArcPolygon(airspace);
+            Polygon combinedArcPolygon = createPolygon(points);
+            return List.of(combinedArcPolygon);
         } else {
-            Log.w(tag, "Unsupported arc count: " + airspace.getArcs().size());
+            Log.w(TAG, "Unsupported arc count: " + airspace.getArcs().size());
             return List.of();
         }
+    }
+
+    private Polygon createPolygon(List<GeoPoint> points) {
+        Polygon polygon = new Polygon();
+        polygon.setPoints(points);
+        return polygon;
     }
 
 }

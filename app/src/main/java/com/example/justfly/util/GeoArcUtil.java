@@ -5,7 +5,6 @@ import com.example.justfly.dataformat.openair.model.Arc;
 import com.example.justfly.dataformat.openair.model.DrawingDirection;
 
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,16 +57,14 @@ public class GeoArcUtil {
         return arcPoints;
     }
 
-    public static Polygon buildCombinedArcPolygon(Airspace airspace) {
+    public static List<GeoPoint> buildCombinedArcPolygon(Airspace airspace) {
         Arc arc1 = airspace.getArcs().get(0);
         Arc arc2 = airspace.getArcs().get(1);
 
         List<GeoPoint> arc1Points = getArcPoints(arc1);
         List<GeoPoint> arc2Points = getArcPoints(arc2);
 
-        GeoPoint arc1End = arc1Points.get(arc1Points.size() - 1);
         GeoPoint arc2Start = arc2Points.get(0);
-        GeoPoint arc2End = arc2Points.get(arc2Points.size() - 1);
         GeoPoint arc1Start = arc1Points.get(0);
 
         // Combine: arc1 → line to arc2 start → arc2 → line to arc1 start
@@ -77,9 +74,7 @@ public class GeoArcUtil {
         fullPolygonPoints.addAll(arc2Points);
         fullPolygonPoints.add(arc1Start);
 
-        Polygon polygon = new Polygon();
-        polygon.setPoints(fullPolygonPoints);
-        return polygon;
+        return fullPolygonPoints;
     }
 
     private static boolean isClockwise(Arc arc) {
