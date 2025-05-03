@@ -23,17 +23,18 @@ public class ArcToPolygonMapper {
         Log.d(TAG, "Airspace: " + airspace);
         Log.d(TAG, "Airspace Arcs: " + airspace.getArcs());
 
+        List<GeoPoint> arcPoints = List.of();
+        
         if (airspace.getArcs().size() == 1) {
             Arc arc = airspace.getArcs().get(0);
-            List<GeoPoint> points = GeoArcUtil.getArcPoints(arc);
-            return createPolygon(points);
+            arcPoints = GeoArcUtil.getSingleArcPoints(arc);
         } else if (airspace.getArcs().size() == 2) {
-            List<GeoPoint> points = GeoArcUtil.buildCombinedArcPolygon(airspace);
-            return createPolygon(points);
+            arcPoints = GeoArcUtil.getCombinedArcPoints(airspace);
         } else {
             Log.e(TAG, "Unsupported arc count: " + airspace.getArcs().size());
-            return null;
         }
+
+        return arcPoints.isEmpty() ? null : createPolygon(arcPoints);
     }
 
     private Polygon createPolygon(List<GeoPoint> points) {

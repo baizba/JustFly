@@ -18,7 +18,7 @@ import java.util.List;
 public class GeoArcUtil {
     private static final int EARTH_RADIUS_METERS = 6371000;
 
-    public static List<GeoPoint> getArcPoints(Arc arc) {
+    public static List<GeoPoint> getSingleArcPoints(Arc arc) {
         List<GeoPoint> arcPoints = new ArrayList<>();
 
         // Calculate radius in meters (from center to start point)
@@ -57,12 +57,12 @@ public class GeoArcUtil {
         return arcPoints;
     }
 
-    public static List<GeoPoint> buildCombinedArcPolygon(Airspace airspace) {
+    public static List<GeoPoint> getCombinedArcPoints(Airspace airspace) {
         Arc arc1 = airspace.getArcs().get(0);
         Arc arc2 = airspace.getArcs().get(1);
 
-        List<GeoPoint> arc1Points = getArcPoints(arc1);
-        List<GeoPoint> arc2Points = getArcPoints(arc2);
+        List<GeoPoint> arc1Points = getSingleArcPoints(arc1);
+        List<GeoPoint> arc2Points = getSingleArcPoints(arc2);
 
         GeoPoint arc2Start = arc2Points.get(0);
         GeoPoint arc1Start = arc1Points.get(0);

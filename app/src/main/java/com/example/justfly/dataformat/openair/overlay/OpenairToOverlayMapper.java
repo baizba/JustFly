@@ -6,6 +6,7 @@ import org.osmdroid.views.overlay.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class OpenairToOverlayMapper {
     private final CircleToPolygonMapper circleToPolygonMapper;
@@ -37,6 +38,7 @@ public class OpenairToOverlayMapper {
                 .stream()
                 .filter(airspace -> !airspace.getArcs().isEmpty())
                 .map(arcToPolygonMapper::toPolygon)
+                .filter(Objects::nonNull)
                 .forEach(airspaceOverlays::add);
 
         return airspaceOverlays;
