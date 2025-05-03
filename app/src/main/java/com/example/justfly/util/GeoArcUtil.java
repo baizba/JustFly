@@ -1,8 +1,11 @@
 package com.example.justfly.util;
 
+import com.example.justfly.dataformat.openair.model.Airspace;
 import com.example.justfly.dataformat.openair.model.Arc;
+import com.example.justfly.dataformat.openair.model.DrawingDirection;
 
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +19,7 @@ import java.util.List;
 public class GeoArcUtil {
     private static final int EARTH_RADIUS_METERS = 6371000;
 
-    public static List<GeoPoint> getArcPoints(Arc arc, boolean isClockwise) {
+    public static List<GeoPoint> getArcPoints(Arc arc) {
         List<GeoPoint> arcPoints = new ArrayList<>();
 
         // Calculate radius in meters (from center to start point)
@@ -36,13 +39,13 @@ public class GeoArcUtil {
 
         // Handle wrap-around if needed
         double angleStep = 1.0; // 1° step = ~100 points for 90° arc
-        double totalAngle = (isClockwise)
+        double totalAngle = isClockwise(arc)
                 ? ((endBearing >= startBearing) ? endBearing - startBearing : 360 - (startBearing - endBearing))
                 : ((startBearing >= endBearing) ? startBearing - endBearing : 360 - (endBearing - startBearing));
 
         int steps = (int) (totalAngle / angleStep);
         for (int i = 0; i <= steps; i++) {
-            double bearingDeg = isClockwise
+            double bearingDeg = isClockwise(arc)
                     ? (startBearing + i * angleStep) % 360
                     : (startBearing - i * angleStep + 360) % 360;
 
@@ -54,6 +57,35 @@ public class GeoArcUtil {
 
         return arcPoints;
     }
+
+    public static Polygon buildCombinedArcPolygon(Airspace airspace) {
+        Arc arc1 = airspace.getArcs().get(0);
+        Arc arc2 = airspace.getArcs().get(1);
+
+        List<GeoPoint> arc1Points = getArcPoints(arc1);
+        List<GeoPoint> arc2Points = getArcPoints(arc2);
+
+        GeoPoint arc1End = arc1Points.get(arc1Points.size() - 1);
+        GeoPoint arc2Start = arc2Points.get(0);
+        GeoPoint arc2End = arc2Points.get(arc2Points.size() - 1);
+        GeoPoint arc1Start = arc1Points.get(0);
+
+        // Combine: arc1 → line to arc2 start → arc2 → line to arc1 start
+        List<GeoPoint> fullPolygonPoints = new ArrayList<>();
+        fullPolygonPoints.addAll(arc1Points);
+        fullPolygonPoints.add(arc2Start);
+        fullPolygonPoints.addAll(arc2Points);
+        fullPolygonPoints.add(arc1Start);
+
+        Polygon polygon = new Polygon();
+        polygon.setPoints(fullPolygonPoints);
+        return polygon;
+    }
+
+    private static boolean isClockwise(Arc arc) {
+        return DrawingDirection.CLOCKWISE.equals(arc.getDirection());
+    }
+
 
     private static GeoPoint calculateDestinationPoint(double lat, double lon, double bearingDeg, double distanceMeters) {
         double angularDistance = distanceMeters / EARTH_RADIUS_METERS;
