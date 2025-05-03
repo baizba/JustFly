@@ -24,7 +24,7 @@ public class OpenairToOverlayMapper {
         openair.getAirspaces()
                 .stream()
                 .filter(airspace -> airspace.getPolygonPoints().size() > 1)
-                .map(pointsToPolygonMapper::toPolygons)
+                .map(pointsToPolygonMapper::toPolygon)
                 .forEach(airspaceOverlays::add);
 
         openair.getAirspaces()
@@ -36,8 +36,9 @@ public class OpenairToOverlayMapper {
         openair.getAirspaces()
                 .stream()
                 .filter(airspace -> !airspace.getArcs().isEmpty())
-                .map(arcToPolygonMapper::toPolygons)
-                .forEach(airspaceOverlays::addAll);
+                .map(arcToPolygonMapper::toPolygon)
+                .forEach(airspaceOverlays::add);
+
         return airspaceOverlays;
     }
 

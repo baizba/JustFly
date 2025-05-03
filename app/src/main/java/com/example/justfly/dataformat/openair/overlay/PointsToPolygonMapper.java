@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  */
 public class PointsToPolygonMapper {
 
-    public Polygon toPolygons(Airspace airspace) {
+    public Polygon toPolygon(Airspace airspace) {
         List<GeoPoint> geoPoints = airspace.getPolygonPoints()
                 .stream()
                 .map(polygonPoint -> new GeoPoint(polygonPoint.getLatitude(), polygonPoint.getLongitude()))

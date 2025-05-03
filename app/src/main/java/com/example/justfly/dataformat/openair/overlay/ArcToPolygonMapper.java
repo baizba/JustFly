@@ -19,22 +19,20 @@ public class ArcToPolygonMapper {
 
     private static final String TAG = ArcToPolygonMapper.class.getName();
 
-    public List<Polygon> toPolygons(Airspace airspace) {
+    public Polygon toPolygon(Airspace airspace) {
         Log.d(TAG, "Airspace: " + airspace);
         Log.d(TAG, "Airspace Arcs: " + airspace.getArcs());
 
         if (airspace.getArcs().size() == 1) {
             Arc arc = airspace.getArcs().get(0);
             List<GeoPoint> points = GeoArcUtil.getArcPoints(arc);
-            Polygon singleArcPolygon = createPolygon(points);
-            return List.of(singleArcPolygon);
+            return createPolygon(points);
         } else if (airspace.getArcs().size() == 2) {
             List<GeoPoint> points = GeoArcUtil.buildCombinedArcPolygon(airspace);
-            Polygon combinedArcPolygon = createPolygon(points);
-            return List.of(combinedArcPolygon);
+            return createPolygon(points);
         } else {
-            Log.w(TAG, "Unsupported arc count: " + airspace.getArcs().size());
-            return List.of();
+            Log.e(TAG, "Unsupported arc count: " + airspace.getArcs().size());
+            return null;
         }
     }
 
