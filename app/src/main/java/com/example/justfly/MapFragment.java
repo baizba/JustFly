@@ -2,7 +2,10 @@ package com.example.justfly;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,6 +73,17 @@ public class MapFragment extends Fragment implements AirspaceView {
         myLocationNewOverlay = new MyLocationNewOverlay(mapView);
         myLocationNewOverlay.enableMyLocation();
         myLocationNewOverlay.enableFollowLocation();
+
+        Bitmap planeBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.airplane_icon_black);
+        if (planeBitmap != null) {
+            myLocationNewOverlay.setPersonIcon(planeBitmap);  // when standing
+            myLocationNewOverlay.setDirectionIcon(planeBitmap); // when moving
+            myLocationNewOverlay.setPersonAnchor(0.5f, 0.5f); // center the plane icon
+            myLocationNewOverlay.setDirectionAnchor(0.5f, 0.5f); // center the plane icon
+        } else {
+            Log.e(this.getClass().getName(), "Could not load plane icon");
+        }
+
         mapView.getOverlays().add(myLocationNewOverlay);
         DirectionLineOverlay directionLineOverlay = new DirectionLineOverlay(myLocationNewOverlay);
         mapView.getOverlays().add(directionLineOverlay);
