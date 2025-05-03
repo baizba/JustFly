@@ -1,9 +1,9 @@
 
 # JustFly
 
-JustFly is another electronic airspace chart. I would like to add airspaces for the countries,
-which enables private pilots to fly without the need for subscriptions to different electronic maps.
-Basically, chart data is already accessible and public. This app only displays it.
+JustFly is an electronic airspace chart. It enables private pilots to fly without the need for
+subscriptions to different electronic maps.
+Chart data is already accessible and public. This app only displays it.
 For now it is only available for Android. It is possible to add XY Tilesources (Slippy Tiles).
 It is also possible to display openair files.
 
@@ -12,23 +12,17 @@ It is also possible to display openair files.
  - Austria
  - Hungary
 
-## 🗺️ Map Attribution
+## Map Attribution
 
-This app uses the following map tile sources:
+This application uses map tiles from the following sources:
 
-### OpenVFR (Slippy Tiles)
-Map tiles based on data from the [OpenVFR project](https://www.openvfr.org/), using open aviation map data.
+- **OpenVFR Slippy Tiles**
+  Map data © [OpenFlightMaps Association (OFMA)](https://www.openflightmaps.org), used under the OFMA General Users’ License.
 
-> © [OpenVFR](https://www.openvfr.org/), based on [OpenStreetMap](https://www.openstreetmap.org/) contributors
-> License: [Creative Commons Attribution-ShareAlike 2.0 (CC BY-SA 2.0)](https://creativecommons.org/licenses/by-sa/2.0/)
+- **OpenTopoMap**
+  Map data: © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), SRTM
+  Map style: © [OpenTopoMap](https://opentopomap.org) ([CC-BY-SA License](https://creativecommons.org/licenses/by-sa/4.0/))
 
----
-
-### OpenTopoMap (for terrain detail)
-Some map tiles are loaded from [OpenTopoMap](https://opentopomap.org/), which uses elevation-enhanced data.
-
-> © [OpenTopoMap](https://opentopomap.org/), based on [OpenStreetMap](https://www.openstreetmap.org/) contributors
-> License: [Creative Commons Attribution-ShareAlike 3.0 (CC BY-SA 3.0)](https://creativecommons.org/licenses/by-sa/3.0/)
 
 ---
 
