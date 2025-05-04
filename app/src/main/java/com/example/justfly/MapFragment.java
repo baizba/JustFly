@@ -23,6 +23,7 @@ import com.example.justfly.overlay.DirectionLineOverlay;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
@@ -34,6 +35,7 @@ public class MapFragment extends Fragment implements AirspaceView {
 
     private MyLocationNewOverlay myLocationNewOverlay;
     private MapView mapView;
+    private MapTileOverlays mapTileOverlays;
 
     @Nullable
     @Override
@@ -42,7 +44,7 @@ public class MapFragment extends Fragment implements AirspaceView {
         handlePreferences(Configuration.getInstance()::load, view.getContext());
         mapView = initializeMap(view);
         MapPresenter mapPresenter = new MapPresenter(this);
-        mapPresenter.showAirspaces();
+        mapPresenter.addAirspaces();
         view.findViewById(R.id.btnFollowMe).setOnClickListener(v -> this.enableFollowMyLocation());
         view.findViewById(R.id.btnSwitchMap).setOnClickListener(v -> this.switchMapSource());
         return view;
@@ -90,10 +92,12 @@ public class MapFragment extends Fragment implements AirspaceView {
     }
 
     @Override
-    public void showAirspaces(Openair openair) {
+    public void addAirspaces(Openair openair) {
         OpenairToOverlayMapper openairToOverlayMapper = new OpenairToOverlayMapper();
-        List<Polygon> overlays = openairToOverlayMapper.getOverlays(openair);
-        mapView.getOverlays().addAll(overlays);
+        List<Polygon> airspaces = openairToOverlayMapper.getPolygonAirspaces(openair);
+        //initially hide them because OpenVFR is loaded at start
+        airspaces.forEach(airspace -> airspace.setEnabled(false));
+        mapView.getOverlays().addAll(airspaces);
     }
 
     private void switchMapSource() {
@@ -102,6 +106,14 @@ public class MapFragment extends Fragment implements AirspaceView {
                 .stream()
                 .filter(o -> o instanceof TilesOverlay)
                 .forEach(o -> o.setEnabled(!o.isEnabled()));
+
+        //show airspaces only for OpenTopo maps
+        Overlay openTopo = mapTileOverlays.getOverlays().get("openTopo");
+        boolean openTopoEnabled = openTopo != null && openTopo.isEnabled();
+        mapView.getOverlays()
+                .stream()
+                .filter(o -> o instanceof Polygon)
+                .forEach(o -> o.setEnabled(openTopoEnabled));
     }
 
     private void handlePreferences(BiConsumer<Context, SharedPreferences> operation, Context ctx) {
@@ -125,7 +137,7 @@ public class MapFragment extends Fragment implements AirspaceView {
         mapView.setTilesScaledToDpi(true);
 
         //add map tiles
-        MapTileOverlays mapTileOverlays = new MapTileOverlays(mapView.getContext());
+        mapTileOverlays = new MapTileOverlays(mapView.getContext());
         mapView.getOverlays().addAll(mapTileOverlays.getOverlays().values());
 
         return mapView;

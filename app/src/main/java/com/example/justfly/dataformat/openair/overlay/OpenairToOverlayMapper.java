@@ -19,7 +19,7 @@ public class OpenairToOverlayMapper {
         arcToPolygonMapper = new ArcToPolygonMapper();
     }
 
-    public List<Polygon> getOverlays(Openair openair) {
+    public List<Polygon> getPolygonAirspaces(Openair openair) {
         List<Polygon> airspaceOverlays = new ArrayList<>();
 
         openair.getAirspaces()

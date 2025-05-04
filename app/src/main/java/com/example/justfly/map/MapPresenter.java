@@ -15,11 +15,11 @@ public class MapPresenter {
         airspaceView.showMyLocation();
     }
 
-    public void showAirspaces() {
+    public void addAirspaces() {
         List<String> openairData = ResourceFileUtil.readResourceFile("openair/lo_airspaces.openair.txt");
         OpenairParser parser = new OpenairParser();
         Openair openair = parser.parse(openairData);
-        airspaceView.showAirspaces(openair);
+        airspaceView.addAirspaces(openair);
     }
 
 }
