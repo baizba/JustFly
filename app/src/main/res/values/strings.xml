@@ -10,5 +10,21 @@
     <string name="gpsSpeed">GS:</string>
     <string name="gpsNoData">-</string>
     <string name="changeMapSource">map source</string>
+    <string name="appInfo">App information</string>
+
+    <!-- Info -->
+    <string name="infoDialogTitle">About JustFly</string>
+    <string name="infoDialogMessage">
+        JustFly App v%1$s\n
+        \n
+        Map tiles by:\n
+        - OpenVFR (openflightmaps.org)\n
+        - OpenTopoMap (CC-BY-SA)\n
+        \n
+        Developed as a navigation aid for VFR pilots.\n
+        Use at your own risk. Not for primary navigation.
+    </string>
+    <string name="closeButtonText">Close</string>
+
     <string name="recordTrack">record track</string>
 </resources>

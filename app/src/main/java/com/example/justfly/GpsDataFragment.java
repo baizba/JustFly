@@ -1,5 +1,6 @@
 package com.example.justfly;
 
+import android.app.AlertDialog;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -69,11 +70,21 @@ public class GpsDataFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_gps_data, container, false);
+        view.findViewById(R.id.infoButton).setOnClickListener(v -> this.showInfoDialog());
         subscribeToGpsUpdates(view);
         ImageButton recordButton = view.findViewById(R.id.btnRecord);
         recordButton.setColorFilter(android.graphics.Color.GRAY);
         recordButton.setOnClickListener(v -> toggleRecording(recordButton));
         return view;
+    }
+
+    private void showInfoDialog() {
+        String infoMessage = getString(R.string.infoDialogMessage, BuildConfig.VERSION_NAME);
+        new AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.infoDialogTitle))
+                .setMessage(infoMessage)
+                .setPositiveButton(getString(R.string.closeButtonText), (dialog, which) -> dialog.dismiss())
+                .show();
     }
 
     private void toggleRecording(ImageButton recordButton) {
