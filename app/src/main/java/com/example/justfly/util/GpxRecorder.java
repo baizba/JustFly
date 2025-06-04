@@ -2,6 +2,7 @@ package com.example.justfly.util;
 
 import android.content.Context;
 import android.location.Location;
+import android.os.Environment;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -19,10 +20,19 @@ public class GpxRecorder {
         return writer != null;
     }
 
+    /**
+     * Starts a new GPX recording session. The file is created in the app's
+     * external files directory under {@link android.os.Environment#DIRECTORY_DOCUMENTS}.
+     */
     public void start(Context context) throws IOException {
         if (writer != null) return;
         String fileName = "track_" + System.currentTimeMillis() + ".gpx";
-        file = new File(context.getExternalFilesDir(null), fileName);
+        File dir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOCUMENTS);
+        if (dir != null && !dir.exists()) {
+            //noinspection ResultOfMethodCallIgnored
+            dir.mkdirs();
+        }
+        file = new File(dir, fileName);
         writer = new FileWriter(file);
         writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         writer.write("<gpx version=\"1.1\" creator=\"JustFly\">\n");
@@ -39,6 +49,7 @@ public class GpxRecorder {
                 location.getAltitude(),
                 time);
         writer.write(line);
+        writer.flush();
     }
 
     public File stop() throws IOException {
