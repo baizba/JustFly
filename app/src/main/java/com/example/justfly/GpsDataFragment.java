@@ -5,10 +5,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.justfly.util.GpxRecorder;
 import com.example.justfly.util.UnitConversionUtil;
 
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
@@ -30,6 +32,8 @@ public class GpsDataFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    private final GpxRecorder gpxRecorder = new GpxRecorder();
 
     public GpsDataFragment() {
         // Required empty public constructor
@@ -66,7 +70,24 @@ public class GpsDataFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_gps_data, container, false);
         subscribeToGpsUpdates(view);
+        ImageButton recordButton = view.findViewById(R.id.btnRecord);
+        recordButton.setColorFilter(android.graphics.Color.GRAY);
+        recordButton.setOnClickListener(v -> toggleRecording(recordButton));
         return view;
+    }
+
+    private void toggleRecording(ImageButton recordButton) {
+        try {
+            if (!gpxRecorder.isRecording()) {
+                gpxRecorder.start(requireContext());
+                recordButton.setColorFilter(android.graphics.Color.RED);
+            } else {
+                gpxRecorder.stop();
+                recordButton.setColorFilter(android.graphics.Color.GRAY);
+            }
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void subscribeToGpsUpdates(View view) {
@@ -88,6 +109,13 @@ public class GpsDataFragment extends Fragment {
             long feet = UnitConversionUtil.metersToFeet(altitude);
             speedTextView.setText(String.format(defaultLocale, "%d KT", knots));
             altitudeTextView.setText(String.format(defaultLocale, "%d FT", feet));
+            if (gpxRecorder.isRecording()) {
+                try {
+                    gpxRecorder.record(location);
+                } catch (java.io.IOException e) {
+                    e.printStackTrace();
+                }
+            }
         });
     }
 }

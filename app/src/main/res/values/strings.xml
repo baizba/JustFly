@@ -10,4 +10,5 @@
     <string name="gpsSpeed">GS:</string>
     <string name="gpsNoData">-</string>
     <string name="changeMapSource">map source</string>
+    <string name="recordTrack">record track</string>
 </resources>
