@@ -1,6 +1,8 @@
 package com.example.justfly;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,11 +13,12 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
-import com.example.justfly.util.GpxRecorder;
+import com.example.justfly.gpxrecording.GpxRecorder;
 import com.example.justfly.util.UnitConversionUtil;
 
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 
+import java.io.File;
 import java.util.Locale;
 
 /**
@@ -93,8 +96,14 @@ public class GpsDataFragment extends Fragment {
                 gpxRecorder.start(requireContext());
                 recordButton.setColorFilter(android.graphics.Color.RED);
             } else {
-                gpxRecorder.stop();
+                File file = gpxRecorder.stop();
                 recordButton.setColorFilter(android.graphics.Color.GRAY);
+
+                SharedPreferences prefs = requireContext().getSharedPreferences(
+                        requireContext().getPackageName() + "_preferences", Context.MODE_PRIVATE);
+                prefs.edit()
+                        .putString("last_gpx_file_path", file.getAbsolutePath())
+                        .apply();
             }
         } catch (java.io.IOException e) {
             e.printStackTrace();
