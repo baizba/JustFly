@@ -1,6 +1,5 @@
 package com.example.justfly.gpxrecording;
 
-import android.content.Context;
 import android.location.Location;
 
 import java.io.BufferedWriter;
@@ -24,12 +23,11 @@ public class GpxRecorder {
      * Starts a new GPX recording session. The file is created in the app's
      * external files directory under {@link android.os.Environment#DIRECTORY_DOCUMENTS}.
      */
-    public void start(Context context) throws IOException {
+    public void start(File dir) throws IOException {
         if (writer != null)
             return;
 
         String fileName = "track_" + System.currentTimeMillis() + ".gpx";
-        File dir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOCUMENTS);
         if (dir != null && !dir.exists()) {
             //noinspection ResultOfMethodCallIgnored
             dir.mkdirs();
