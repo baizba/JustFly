@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,17 +76,16 @@ public class GpsDataFragment extends Fragment {
     public void onStart() {
         super.onStart();
         Intent intent = new Intent(requireContext(), GpxRecordingService.class);
+        requireContext().startService(new Intent(requireContext(), GpxRecordingService.class));
         requireContext().bindService(intent, gpxServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (gpxRecordingServiceBound) {
-            requireContext().unbindService(gpxServiceConnection);
-            gpxRecordingServiceBound = false;
-            gpxRecordingService = null;
-        }
+        requireContext().stopService(new Intent(requireContext(), GpxRecordingService.class));
+        requireContext().unbindService(gpxServiceConnection);
+        gpxRecordingService = null;
     }
 
     @Override
@@ -110,16 +110,14 @@ public class GpsDataFragment extends Fragment {
     }
 
     private void toggleRecording(ImageButton recordButton) {
-        if (gpxRecordingServiceBound && !gpxRecordingService.isRecording()) {
-            requireContext().startService(new Intent(requireContext(), GpxRecordingService.class));
+        if (gpxRecordingService != null && !gpxRecordingService.isRecording()) {
+            gpxRecordingService.startRecording();
             recordButton.setColorFilter(android.graphics.Color.RED);
-        } else {
-            requireContext().stopService(new Intent(requireContext(), GpxRecordingService.class));
-            requireContext().unbindService(gpxServiceConnection);
-            gpxRecordingServiceBound = false;
-            gpxRecordingService = null;
-
+        } else if (gpxRecordingService != null && gpxRecordingService.isRecording()) {
+            gpxRecordingService.stopRecording();
             recordButton.setColorFilter(android.graphics.Color.GRAY);
+        } else {
+            Log.e("GpsDataFragment", "GpxRecordingService is not bound or null");
         }
     }
 
@@ -142,17 +140,9 @@ public class GpsDataFragment extends Fragment {
             long feet = UnitConversionUtil.metersToFeet(altitude);
             speedTextView.setText(String.format(defaultLocale, "%d KT", knots));
             altitudeTextView.setText(String.format(defaultLocale, "%d FT", feet));
-//            if (gpxRecorder.isRecording()) {
-//                try {
-//                    gpxRecorder.record(location);
-//                } catch (java.io.IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
         });
     }
 
-    private boolean gpxRecordingServiceBound;
     /**
      * Defines callbacks for service binding, passed to bindService().
      */
@@ -163,12 +153,10 @@ public class GpsDataFragment extends Fragment {
             // We've bound to LocalService, cast the IBinder and get LocalService instance.
             GpxRecordingService.LocalBinder binder = (GpxRecordingService.LocalBinder) service;
             gpxRecordingService = binder.getService();
-            gpxRecordingServiceBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            gpxRecordingServiceBound = false;
             gpxRecordingService = null;
         }
     };
