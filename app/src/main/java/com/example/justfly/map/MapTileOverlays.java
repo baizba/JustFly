@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class MapTileOverlays {
 
-    private static final List<String> ACTIVE_REGIONS = List.of("openvfr_lo", "openvfr_lh");
+    private static final List<String> ACTIVE_REGIONS = List.of("openvfr_lo", "openvfr_lh", "openvfr_lj");
 
     private static final int MIN_ZOOM = 4;
     private static final int MAX_ZOOM = 11;
