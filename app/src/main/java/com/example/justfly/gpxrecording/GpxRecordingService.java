@@ -23,11 +23,11 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.justfly.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.Priority;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +65,42 @@ public class GpxRecordingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
+
+        // --- Start as a Foreground Service ---
+        // This is crucial for background location access from Android 8+
+        // and highly recommended for any long-running background task.
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("GPX Recording Active")
+                .setContentText("Your track is being recorded.")
+                .setSmallIcon(R.mipmap.ic_launcher) // REPLACE with your actual notification icon
+                .setOngoing(true) // Makes the notification non-dismissable by swipe
+                .build();
+        startForeground(NOTIFICATION_ID, notification);
+        // --- End Foreground Service Setup ---
+
+        File externalFilesDir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        if (externalFilesDir != null && !externalFilesDir.exists()) {
+            if (!externalFilesDir.mkdirs()) {
+                Log.e(TAG, "Failed to create recording directory: " + externalFilesDir.getAbsolutePath());
+                stopSelf(); // Stop the service if directory creation fails
+                return START_NOT_STICKY;
+            }
+        }
+
+        try {
+            if (!gpxRecorder.isRecording()) {
+                Log.i(TAG, "Starting GPX Recording to " + externalFilesDir.getAbsolutePath());
+                gpxRecorder.start(externalFilesDir); // Pass the directory to your recorder
+                startLocationUpdates();
+                Log.i(TAG, "GPX Recording started and listening for location updates.");
+            } else {
+                Log.i(TAG, "GPX Recording already in progress.");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Exception while starting GpxRecorder", e);
+            stopSelf(); // Stop the service if starting the recorder fails
+        }
+
         return START_STICKY;
     }
 
@@ -84,62 +120,6 @@ public class GpxRecordingService extends Service {
 
         // If you started as a foreground service, ensure it's stopped.
         stopForeground(true); // True to remove the notification
-    }
-
-    public void stopRecording() {
-        Log.i(TAG, "stopRecording called");
-        if (isRecording()) {
-            stopLocationUpdates(); // Stop listening for locations
-        }
-
-        try {
-            File file = gpxRecorder.stop();
-            Log.i(TAG, "Stopping GPX Recording to " + file.getAbsolutePath());
-            SharedPreferences prefs = getSharedPreferences(getPackageName() + "_preferences", Context.MODE_PRIVATE);
-            prefs.edit().putString("last_gpx_file_path", file.getAbsolutePath()).apply();
-        } catch (IOException e) {
-            Log.e(TAG, "IOException while stopping GpxRecorder", e);
-            stopSelf();
-        }
-
-        // If you started as a foreground service, ensure it's stopped.
-        stopForeground(true); // True to remove the notification
-    }
-
-    public void startRecording() {
-        // --- Start as a Foreground Service ---
-        // This is crucial for background location access from Android 8+
-        // and highly recommended for any long-running background task.
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("GPX Recording Active")
-                .setContentText("Your track is being recorded.")
-                .setSmallIcon(R.mipmap.ic_launcher) // REPLACE with your actual notification icon
-                .setOngoing(true) // Makes the notification non-dismissable by swipe
-                .build();
-        startForeground(NOTIFICATION_ID, notification);
-        // --- End Foreground Service Setup ---
-
-        File externalFilesDir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-        if (externalFilesDir != null && !externalFilesDir.exists()) {
-            if (!externalFilesDir.mkdirs()) {
-                Log.e(TAG, "Failed to create recording directory: " + externalFilesDir.getAbsolutePath());
-                stopSelf(); // Stop the service if directory creation fails
-            }
-        }
-
-        try {
-            if (!gpxRecorder.isRecording()) {
-                Log.i(TAG, "Starting GPX Recording to " + externalFilesDir.getAbsolutePath());
-                gpxRecorder.start(externalFilesDir); // Pass the directory to your recorder
-                startLocationUpdates();
-                Log.i(TAG, "GPX Recording started and listening for location updates.");
-            } else {
-                Log.i(TAG, "GPX Recording already in progress.");
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Exception while starting GpxRecorder", e);
-            stopSelf(); // Stop the service if starting the recorder fails
-        }
     }
 
     public boolean isRecording() {
