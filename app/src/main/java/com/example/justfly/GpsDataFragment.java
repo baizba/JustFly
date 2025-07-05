@@ -96,7 +96,7 @@ public class GpsDataFragment extends Fragment {
         subscribeToGpsUpdates(view);
         recordButton = view.findViewById(R.id.btnRecord);
         recordButton.setColorFilter(android.graphics.Color.GRAY);
-        recordButton.setOnClickListener(v -> toggleRecording(recordButton));
+        recordButton.setOnClickListener(v -> toggleRecording());
         return view;
     }
 
@@ -109,7 +109,7 @@ public class GpsDataFragment extends Fragment {
                 .show();
     }
 
-    private void toggleRecording(ImageButton recordButton) {
+    private void toggleRecording() {
         if (!recordingActive) {
             requireContext().startForegroundService(getGpxRecordingServiceIntent());
             requireContext().bindService(getGpxRecordingServiceIntent(), gpxServiceConnection, Context.BIND_AUTO_CREATE);
@@ -134,7 +134,7 @@ public class GpsDataFragment extends Fragment {
         GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(mainActivity.getBaseContext());
         gpsMyLocationProvider.setLocationUpdateMinTime(500);
         gpsMyLocationProvider.startLocationProvider((location, source) -> {
-            double altitude = 0;
+            double altitude;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && location.hasMslAltitude()) {
                 altitude = location.getMslAltitudeMeters();
             } else {
