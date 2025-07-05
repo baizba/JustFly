@@ -35,6 +35,14 @@ android {
             useJUnitPlatform()
         }
     }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/LICENSE.md'
+            excludes += '/META-INF/NOTICE.md'
+            excludes += '/META-INF/LICENSE'
+            excludes += '/META-INF/NOTICE'
+        }
+    }
 }
 
 dependencies {
@@ -43,6 +51,10 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
     implementation libs.osmdroid.android
+    implementation libs.play.services.location
+    implementation libs.play.services.awareness
+    implementation libs.databinding.compiler.common
+    implementation libs.transport.api
     testImplementation libs.junit.jupiter
     testImplementation platform(libs.junit.bom)
     androidTestImplementation libs.ext.junit

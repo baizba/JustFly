@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.3"
+agp = "8.11.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -9,6 +9,10 @@ activity = "1.9.0"
 constraintlayout = "2.1.4"
 osmdroidAndroid = "6.1.18"
 junitBom = "5.11.3"
+playServicesLocation = "21.3.0"
+playServicesAwareness = "19.1.0"
+databindingCompilerCommon = "8.11.0"
+transportApi = "4.0.0"
 
 [libraries]
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junitBom" } # JUnit BOM
@@ -20,6 +24,10 @@ material = { group = "com.google.android.material", name = "material", version.r
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroidAndroid" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+play-services-awareness = { group = "com.google.android.gms", name = "play-services-awareness", version.ref = "playServicesAwareness" }
+databinding-compiler-common = { group = "androidx.databinding", name = "databinding-compiler-common", version.ref = "databindingCompilerCommon" }
+transport-api = { group = "com.google.android.datatransport", name = "transport-api", version.ref = "transportApi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
