@@ -16,10 +16,10 @@ import androidx.fragment.app.Fragment;
 
 import com.example.justfly.dataformat.openair.model.Openair;
 import com.example.justfly.dataformat.openair.overlay.OpenairToOverlayMapper;
-import com.example.justfly.map.AirspaceView;
-import com.example.justfly.map.MapPresenter;
+import com.example.justfly.dataformat.openair.parser.OpenairParser;
 import com.example.justfly.map.MapTileOverlays;
 import com.example.justfly.overlay.DirectionLineOverlay;
+import com.example.justfly.util.ResourceFileUtil;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.views.MapView;
@@ -31,7 +31,7 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-public class MapFragment extends Fragment implements AirspaceView {
+public class MapFragment extends Fragment {
 
     private MyLocationNewOverlay myLocationNewOverlay;
     private MapView mapView;
@@ -43,8 +43,11 @@ public class MapFragment extends Fragment implements AirspaceView {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         handlePreferences(Configuration.getInstance()::load, view.getContext());
         mapView = initializeMap(view);
-        MapPresenter mapPresenter = new MapPresenter(this);
-        mapPresenter.addAirspaces();
+        showMyLocation();
+        List<String> openairData = ResourceFileUtil.readResourceFile("openair/lo_airspaces.openair.txt");
+        OpenairParser parser = new OpenairParser();
+        Openair openair = parser.parse(openairData);
+        this.addAirspaces(openair);
         view.findViewById(R.id.btnFollowMe).setOnClickListener(v -> this.enableFollowMyLocation());
         view.findViewById(R.id.btnSwitchMap).setOnClickListener(v -> this.switchMapSource());
         return view;
@@ -70,7 +73,6 @@ public class MapFragment extends Fragment implements AirspaceView {
         }
     }
 
-    @Override
     public void showMyLocation() {
         myLocationNewOverlay = new MyLocationNewOverlay(mapView);
         myLocationNewOverlay.enableMyLocation();
@@ -91,7 +93,6 @@ public class MapFragment extends Fragment implements AirspaceView {
         mapView.getOverlays().add(directionLineOverlay);
     }
 
-    @Override
     public void addAirspaces(Openair openair) {
         OpenairToOverlayMapper openairToOverlayMapper = new OpenairToOverlayMapper();
         List<Polygon> airspaces = openairToOverlayMapper.getPolygonAirspaces(openair);
