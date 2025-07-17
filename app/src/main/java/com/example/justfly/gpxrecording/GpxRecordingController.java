@@ -31,11 +31,16 @@ public class GpxRecordingController {
         }
     }
 
+    public void addToggleRecordingFunctionality(Context context, Intent intent) {
+        if (recordButton != null) {
+            recordButton.setOnClickListener(v -> toggleRecording(context, intent));
+        }
+    }
+
     private ServiceConnection createGpxRecordingServiceConnection() {
         return new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName className, IBinder service) {
-                // We've bound to LocalService, cast the IBinder and get LocalService instance.
                 GpxRecordingService.LocalBinder binder = (GpxRecordingService.LocalBinder) service;
                 gpxRecordingService = binder.getService();
                 recordingActive = gpxRecordingService.isRecording();
@@ -48,12 +53,6 @@ public class GpxRecordingController {
                 gpxRecordingService = null;
             }
         };
-    }
-
-    public void addToggleRecordingFunctionality(Context context, Intent intent) {
-        if (recordButton != null) {
-            recordButton.setOnClickListener(v -> toggleRecording(context, intent));
-        }
     }
 
     private void toggleButtonColor(boolean buttonActive) {
@@ -73,7 +72,6 @@ public class GpxRecordingController {
             unbindService(context);
             recordingActive = false;
             gpxRecordingService = null;
-
             toggleButtonColor(false);
         }
     }

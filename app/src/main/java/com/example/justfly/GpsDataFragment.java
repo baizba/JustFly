@@ -33,14 +33,14 @@ public class GpsDataFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        GpsController gpsController = new GpsController();
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_gps_data, container, false);
         view.findViewById(R.id.infoButton).setOnClickListener(v -> this.showInfoDialog());
         TextView speedTextView = view.findViewById(R.id.textSpeed);
         TextView altitudeTextView = view.findViewById(R.id.textAltitude);
-        gpsController.subscribeToGpsUpdates(speedTextView, altitudeTextView, requireContext());
         ImageButton recordButton = view.findViewById(R.id.btnRecord);
+
+        GpsController gpsController = new GpsController();
+        gpsController.subscribeToGpsUpdates(speedTextView, altitudeTextView, requireContext());
         recordButton.setColorFilter(android.graphics.Color.GRAY);
         gpxRecordingController = new GpxRecordingController(recordButton);
         gpxRecordingController.addToggleRecordingFunctionality(requireContext(), getGpxRecordingServiceIntent());
