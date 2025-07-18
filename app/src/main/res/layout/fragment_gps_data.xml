@@ -74,4 +74,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/infoButton" />
 
+    <Button
+        android:id="@+id/btnViewGpx"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@null"
+        android:text="@string/gpxLabel"
+        android:contentDescription="@string/gpxDescription"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btnRecord" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

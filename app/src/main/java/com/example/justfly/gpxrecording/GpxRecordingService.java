@@ -107,7 +107,7 @@ public class GpxRecordingService extends Service {
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy");
-        stopLocationUpdates(); // Stop listening for locations
+        stopLocationUpdates();
 
         try {
             File file = gpxRecorder.stop();
@@ -197,7 +197,6 @@ public class GpxRecordingService extends Service {
      */
     public class LocalBinder extends Binder {
         public GpxRecordingService getService() {
-            // Return this instance of GpxRecordingService so clients can call public methods
             return GpxRecordingService.this;
         }
     }

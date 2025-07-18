@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import com.example.justfly.gps.GpsController;
 import com.example.justfly.gpxrecording.GpxRecordingController;
 import com.example.justfly.gpxrecording.GpxRecordingService;
+import com.example.justfly.gpxrecording.TrackFileDialog;
 
 public class GpsDataFragment extends Fragment {
 
@@ -34,7 +35,8 @@ public class GpsDataFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_gps_data, container, false);
-        view.findViewById(R.id.infoButton).setOnClickListener(v -> this.showInfoDialog());
+        view.findViewById(R.id.infoButton).setOnClickListener(v -> showInfoDialog());
+        view.findViewById(R.id.btnViewGpx).setOnClickListener(v -> showGpxDialog());
         TextView speedTextView = view.findViewById(R.id.textSpeed);
         TextView altitudeTextView = view.findViewById(R.id.textAltitude);
         ImageButton recordButton = view.findViewById(R.id.btnRecord);
@@ -54,6 +56,10 @@ public class GpsDataFragment extends Fragment {
                 .setMessage(infoMessage)
                 .setPositiveButton(getString(R.string.closeButtonText), (dialog, which) -> dialog.dismiss())
                 .show();
+    }
+
+    private void showGpxDialog() {
+        new TrackFileDialog().show(getChildFragmentManager(), "gpx_files_dialog");
     }
 
     private Intent getGpxRecordingServiceIntent() {
