@@ -24,7 +24,9 @@
         Developed as a navigation aid for VFR pilots.\n
         Use at your own risk. Not for primary navigation.
     </string>
-    <string name="closeButtonText">Close</string>
 
+    <string name="closeButtonText">Close</string>
     <string name="recordTrack">record track</string>
+    <string name="gpxLabel">GPX</string>
+    <string name="gpxDescription">GPX View</string>
 </resources>
