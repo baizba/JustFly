@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 
 import com.example.justfly.gps.GpsController;
+import com.example.justfly.gpxrecording.GpxFileDialogFragment;
 import com.example.justfly.gpxrecording.GpxRecordingController;
 import com.example.justfly.gpxrecording.GpxRecordingService;
 import com.example.justfly.gpxrecording.TrackFileDialog;
@@ -59,7 +60,8 @@ public class GpsDataFragment extends Fragment {
     }
 
     private void showGpxDialog() {
-        new TrackFileDialog().show(getChildFragmentManager(), "gpx_files_dialog");
+        //new TrackFileDialog().show(getChildFragmentManager(), "gpx_files_dialog");
+        new GpxFileDialogFragment().show(getParentFragmentManager(), "gpx_files_dialog");
     }
 
     private Intent getGpxRecordingServiceIntent() {
