@@ -23,23 +23,24 @@ public class OpenairToOverlayMapper {
         List<Polygon> airspaceOverlays = new ArrayList<>();
 
         openair.getAirspaces()
-                .stream()
-                .filter(airspace -> airspace.getPolygonPoints().size() > 1)
-                .map(pointsToPolygonMapper::toPolygon)
-                .forEach(airspaceOverlays::add);
+                .forEach(airspace -> {
+                    if (!airspace.getArcs().isEmpty()) {
+                        Polygon arcPolygon = arcToPolygonMapper.toPolygon(airspace);
+                        if (Objects.nonNull(arcPolygon)) {
+                            airspaceOverlays.add(arcPolygon);
+                        }
+                        return;
+                    }
 
-        openair.getAirspaces()
-                .stream()
-                .filter(airspace -> !airspace.getCircles().isEmpty())
-                .map(circleToPolygonMapper::toPolygons)
-                .forEach(airspaceOverlays::addAll);
+                    if (!airspace.getCircles().isEmpty()) {
+                        airspaceOverlays.addAll(circleToPolygonMapper.toPolygons(airspace));
+                        return;
+                    }
 
-        openair.getAirspaces()
-                .stream()
-                .filter(airspace -> !airspace.getArcs().isEmpty())
-                .map(arcToPolygonMapper::toPolygon)
-                .filter(Objects::nonNull)
-                .forEach(airspaceOverlays::add);
+                    if (airspace.getPolygonPoints().size() > 1) {
+                        airspaceOverlays.add(pointsToPolygonMapper.toPolygon(airspace));
+                    }
+                });
 
         return airspaceOverlays;
     }
