@@ -10,6 +10,8 @@ import android.util.Log;
 import com.example.justfly.R;
 import com.example.justfly.dataformat.openair.model.Openair;
 import com.example.justfly.dataformat.openair.overlay.OpenairToOverlayMapper;
+import com.example.justfly.gps.LocationRepository;
+import com.example.justfly.gps.SharedLocationProvider;
 import com.example.justfly.overlay.DirectionLineOverlay;
 
 import org.osmdroid.config.Configuration;
@@ -60,8 +62,8 @@ public class MapController {
         mapView.onPause();
     }
 
-    public void showMyLocation(Resources resources) {
-        myLocationNewOverlay = new MyLocationNewOverlay(mapView);
+    public void showMyLocation(Resources resources, LocationRepository locationRepository) {
+        myLocationNewOverlay = new MyLocationNewOverlay(new SharedLocationProvider(locationRepository), mapView);
         myLocationNewOverlay.enableMyLocation();
         myLocationNewOverlay.enableFollowLocation();
 
