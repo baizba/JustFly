@@ -15,21 +15,25 @@ import com.example.justfly.gps.GpsController;
 import com.example.justfly.gpxrecording.GpxFileDialogFragment;
 import com.example.justfly.gpxrecording.GpxRecordingController;
 import com.example.justfly.gpxrecording.GpxRecordingService;
-import com.example.justfly.gpxrecording.TrackFileDialog;
 
 public class GpsDataFragment extends Fragment {
 
     private GpxRecordingController gpxRecordingController;
+    private GpsController gpsController;
+    private TextView speedTextView;
+    private TextView altitudeTextView;
 
     @Override
     public void onStart() {
         super.onStart();
+        gpsController.subscribeToGpsUpdates(speedTextView, altitudeTextView);
         gpxRecordingController.bindService(requireContext(), getGpxRecordingServiceIntent());
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        gpsController.unsubscribeFromGpsUpdates();
         gpxRecordingController.unbindService(requireContext());
     }
 
@@ -38,12 +42,11 @@ public class GpsDataFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_gps_data, container, false);
         view.findViewById(R.id.infoButton).setOnClickListener(v -> showInfoDialog());
         view.findViewById(R.id.btnViewGpx).setOnClickListener(v -> showGpxDialog());
-        TextView speedTextView = view.findViewById(R.id.textSpeed);
-        TextView altitudeTextView = view.findViewById(R.id.textAltitude);
+        speedTextView = view.findViewById(R.id.textSpeed);
+        altitudeTextView = view.findViewById(R.id.textAltitude);
         ImageButton recordButton = view.findViewById(R.id.btnRecord);
 
-        GpsController gpsController = new GpsController();
-        gpsController.subscribeToGpsUpdates(speedTextView, altitudeTextView, requireContext());
+        gpsController = new GpsController(JustFlyApp.getLocationRepository(requireContext()));
         recordButton.setColorFilter(android.graphics.Color.GRAY);
         gpxRecordingController = new GpxRecordingController(recordButton);
         gpxRecordingController.addToggleRecordingFunctionality(requireContext(), getGpxRecordingServiceIntent());

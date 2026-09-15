@@ -1,38 +1,48 @@
 package com.example.justfly.gps;
 
-import android.content.Context;
+import android.location.Location;
 import android.os.Build;
 import android.widget.TextView;
 
 import com.example.justfly.util.UnitConversionUtil;
 
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.IMyLocationConsumer;
-
 import java.util.Locale;
+import java.util.Objects;
 
 public class GpsController {
 
     private static final Locale DEFAULT_LOCALE = Locale.GERMANY;
 
-    public void subscribeToGpsUpdates(TextView speedView, TextView altitudeView, Context context) {
-        GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-        gpsMyLocationProvider.setLocationUpdateMinTime(500);
-        gpsMyLocationProvider.startLocationProvider(getGpsUpdater(speedView, altitudeView));
+    private final LocationRepository locationRepository;
+    private LocationRepository.Listener locationListener;
+
+    public GpsController(LocationRepository locationRepository) {
+        this.locationRepository = Objects.requireNonNull(locationRepository, "locationRepository");
     }
 
-    public IMyLocationConsumer getGpsUpdater(TextView speedView, TextView altitudeView) {
-        return (location, source) -> {
-            double altitude;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && location.hasMslAltitude()) {
-                altitude = location.getMslAltitudeMeters();
-            } else {
-                altitude = location.getAltitude();
-            }
-            long knots = UnitConversionUtil.msToKnots(location.getSpeed());
-            long feet = UnitConversionUtil.metersToFeet(altitude);
-            speedView.setText(String.format(DEFAULT_LOCALE, "%d KT", knots));
-            altitudeView.setText(String.format(DEFAULT_LOCALE, "%d FT", feet));
-        };
+    public void subscribeToGpsUpdates(TextView speedView, TextView altitudeView) {
+        unsubscribeFromGpsUpdates();
+        locationListener = location -> updateHud(speedView, altitudeView, location);
+        locationRepository.addListener(locationListener);
+    }
+
+    public void unsubscribeFromGpsUpdates() {
+        if (locationListener != null) {
+            locationRepository.removeListener(locationListener);
+            locationListener = null;
+        }
+    }
+
+    private void updateHud(TextView speedView, TextView altitudeView, Location location) {
+        double altitude;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && location.hasMslAltitude()) {
+            altitude = location.getMslAltitudeMeters();
+        } else {
+            altitude = location.getAltitude();
+        }
+        long knots = UnitConversionUtil.msToKnots(location.getSpeed());
+        long feet = UnitConversionUtil.metersToFeet(altitude);
+        speedView.setText(String.format(DEFAULT_LOCALE, "%d KT", knots));
+        altitudeView.setText(String.format(DEFAULT_LOCALE, "%d FT", feet));
     }
 }

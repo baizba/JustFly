@@ -13,7 +13,6 @@ import android.location.Location;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -21,13 +20,9 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
+import com.example.justfly.JustFlyApp;
 import com.example.justfly.R;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.Priority;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
+import com.example.justfly.gps.LocationRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,10 +32,10 @@ public class GpxRecordingService extends Service {
 
     private final GpxRecorder gpxRecorder = new GpxRecorder();
     private final IBinder binder = new LocalBinder();
+    private final LocationRepository.Listener recordingListener = this::recordLocation;
 
-    private FusedLocationProviderClient fusedLocationClient;
-    private LocationCallback locationCallback;
-    private static final long LOCATION_UPDATE_INTERVAL_MS = 500;
+    private LocationRepository locationRepository;
+    private boolean subscribedToLocation;
 
     // --- Notification Fields (Required for Foreground Service) ---
     private static final String CHANNEL_ID = "GpxRecordingChannel";
@@ -57,8 +52,7 @@ public class GpxRecordingService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate");
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        createLocationCallback();
+        locationRepository = JustFlyApp.getLocationRepository(this);
         createNotificationChannel(); // Create notification channel for foreground service
     }
 
@@ -138,45 +132,26 @@ public class GpxRecordingService extends Service {
             return;
         }
 
-        // Configure location request
-        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, LOCATION_UPDATE_INTERVAL_MS)
-                .setMinUpdateIntervalMillis(LOCATION_UPDATE_INTERVAL_MS)
-                .build();
-
-        // Start listening
-        try {
-            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper()); // Callbacks on main thread
-            Log.i(TAG, "Requested location updates from FusedLocationProvider.");
-        } catch (SecurityException e) {
-            Log.e(TAG, "SecurityException while requesting location updates. Permissions still an issue?", e);
-            stopSelf();
+        if (!subscribedToLocation) {
+            locationRepository.addListener(recordingListener);
+            subscribedToLocation = true;
         }
     }
 
     private void stopLocationUpdates() {
-        if (fusedLocationClient != null && locationCallback != null) {
+        if (subscribedToLocation) {
             Log.i(TAG, "Stopping location updates.");
-            fusedLocationClient.removeLocationUpdates(locationCallback);
+            locationRepository.removeListener(recordingListener);
+            subscribedToLocation = false;
         }
     }
 
-    private void createLocationCallback() {
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                for (Location location : locationResult.getLocations()) {
-                    if (location != null) {
-                        try {
-                            // Log.d(TAG, "Service received location: " + location.getLatitude() + ", " + location.getLongitude());
-                            gpxRecorder.record(location); // Send location to your GpxRecorder
-                        } catch (IOException e) {
-                            Log.e(TAG, "Error recording location point in service", e);
-                        }
-                    }
-                }
-            }
-
-        };
+    private void recordLocation(@NonNull Location location) {
+        try {
+            gpxRecorder.record(location);
+        } catch (IOException e) {
+            Log.e(TAG, "Error recording location point in service", e);
+        }
     }
 
     private void createNotificationChannel() {

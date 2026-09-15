@@ -33,7 +33,7 @@ public class MapFragment extends Fragment {
 
         mapController = new MapController(view.findViewById(R.id.map));
         mapController.initializeMap();
-        mapController.showMyLocation(getResources());
+        mapController.showMyLocation(getResources(), JustFlyApp.getLocationRepository(requireContext()));
         List<String> openairData = ResourceFileUtil.readResourceFile("openair/lo_airspaces.openair.txt");
         OpenairParser parser = new OpenairParser();
         Openair openair = parser.parse(openairData);
