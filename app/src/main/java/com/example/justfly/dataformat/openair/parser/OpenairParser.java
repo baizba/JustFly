@@ -136,6 +136,7 @@ public class OpenairParser {
                 startLat = 0;
                 startLon = 0;
                 endLat = 0;
+                endLon = 0;
                 drawingDirection = null;
             }
         }
