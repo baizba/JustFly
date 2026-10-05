@@ -2,8 +2,6 @@ package com.example.justfly.dataformat.openair.overlay;
 
 import com.example.justfly.dataformat.openair.model.Openair;
 
-import org.osmdroid.views.overlay.Polygon;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,13 +17,13 @@ public class OpenairToOverlayMapper {
         arcToPolygonMapper = new ArcToPolygonMapper();
     }
 
-    public List<Polygon> getPolygonAirspaces(Openair openair) {
-        List<Polygon> airspaceOverlays = new ArrayList<>();
+    public List<AirspaceGeometry> getPolygonAirspaces(Openair openair) {
+        List<AirspaceGeometry> airspaceOverlays = new ArrayList<>();
 
         openair.getAirspaces()
                 .forEach(airspace -> {
                     if (!airspace.getArcs().isEmpty()) {
-                        Polygon arcPolygon = arcToPolygonMapper.toPolygon(airspace);
+                        AirspaceGeometry arcPolygon = arcToPolygonMapper.toPolygon(airspace);
                         if (Objects.nonNull(arcPolygon)) {
                             airspaceOverlays.add(arcPolygon);
                         }

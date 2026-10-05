@@ -1,0 +1,132 @@
+JustFly MapLibre migration implementation report
+
+Implementation is in place. Device acceptance testing is pending; there is no
+connected device and the installed aviation MBTiles are not in this checkout.
+
+1. Files changed (14)
+app/build.gradle
+gradle/libs.versions.toml
+app/src/main/java/com/example/justfly/MainActivity.java
+app/src/main/java/com/example/justfly/MapFragment.java
+app/src/main/java/com/example/justfly/map/MapController.java
+app/src/main/java/com/example/justfly/map/MapTileOverlays.java
+app/src/main/java/com/example/justfly/dataformat/openair/overlay/ArcToPolygonMapper.java
+app/src/main/java/com/example/justfly/dataformat/openair/overlay/CircleToPolygonMapper.java
+app/src/main/java/com/example/justfly/dataformat/openair/overlay/OpenairToOverlayMapper.java
+app/src/main/java/com/example/justfly/dataformat/openair/overlay/PointsToPolygonMapper.java
+app/src/main/java/com/example/justfly/util/GeoArcUtil.java
+app/src/main/java/com/example/justfly/util/GeoCircleUtil.java
+app/src/main/res/layout/fragment_map.xml
+app/src/test/java/com/example/justfly/dataformat/openair/overlay/OpenairToOverlayMapperTest.java
+
+2. Files added (20, including this report)
+app/src/main/java/com/example/justfly/dataformat/openair/overlay/GeoCoordinate.java
+app/src/main/java/com/example/justfly/dataformat/openair/overlay/AirspaceGeometry.java
+app/src/main/java/com/example/justfly/map/MapSurfaceView.java
+app/src/main/java/com/example/justfly/map/MapZoomControls.java
+app/src/main/java/com/example/justfly/map/MapArtwork.java
+app/src/main/java/com/example/justfly/map/MapBehavior.java
+app/src/main/java/com/example/justfly/map/MapPreferences.java
+app/src/main/java/com/example/justfly/map/MapHttpConfiguration.java
+app/src/main/java/com/example/justfly/map/LegacyTileKey.java
+app/src/main/java/com/example/justfly/map/LegacyTileCache.java
+app/src/main/assets/map_controls.json
+app/src/main/assets/OSMDROID_LICENSE.txt
+app/src/main/assets/MAP_CONTROLS_NOTICE.txt
+app/src/test/java/com/example/justfly/map/MapBehaviorTest.java
+app/src/test/java/com/example/justfly/map/LegacyTileKeyTest.java
+app/src/test/java/com/example/justfly/map/MapArtworkIntegrityTest.java
+app/src/test/java/com/example/justfly/map/MapHttpConfigurationTest.java
+app/src/test/java/com/example/justfly/dataformat/openair/overlay/GeometryParityTest.java
+app/src/androidTest/java/com/example/justfly/map/LegacyTileCacheTest.java
+MAPLIBRE_MIGRATION.txt
+
+3. Files removed (3)
+app/src/main/java/com/example/justfly/gps/SharedLocationProvider.java
+app/src/main/java/com/example/justfly/map/LocalTileProvider.java
+app/src/main/java/com/example/justfly/overlay/DirectionLineOverlay.java
+
+4. Dependencies changed
+Removed org.osmdroid:osmdroid-android:6.1.18.
+Added org.maplibre.gl:android-sdk:13.6.1, the stable compatible version
+verified during planning against Maven metadata and published AAR requirements.
+Declared com.squareup.okhttp3:okhttp:4.12.0 directly to adapt existing optional
+tile HTTP preferences; this is the version already supplied by MapLibre.
+Added BOM-managed JUnit Platform launcher at test runtime to fix the existing
+unit-test launcher failure.
+No changes to Java 17, AGP 9.3.2, Gradle 9.5.0, minSdk 30, or compile/target 34.
+
+5. Components replaced and behavior retained
+MapSurfaceView owns MapLibre's texture MapView and application zoom controls.
+MapController remains the application-facing map facade and owns SDK rendering,
+projection, camera, and lifecycle. SDK dependencies stay in the map package.
+GeoCoordinate/AirspaceGeometry replace osmdroid geometry and overlay containers.
+OpenAir parsing, domain models, arc/circle calculations and geometry selection
+precedence remain unchanged; closed rings adapt these results for GeoJSON.
+Transparent fills, black boundaries, and existing mode-dependent visibility
+are retained. The checked-out app has no per-class colors, airspace detail dialog,
+or route/waypoint subsystem; none was invented during this migration.
+GeoJSON/style layers replace the aircraft marker, accuracy circle, heading line,
+and airspace overlays. The original aircraft resource is used. Heading rotates
+the aircraft and its 600-pixel line; the map remains north-up. Touch cancels follow.
+Density-adjusted camera zoom retains legacy zoom 4-14 and initial zoom 11.
+Original map/follow/plus/minus PNGs are retained, including density variants,
+with their license. Layout dimensions and other UI resources are unchanged.
+
+The lo/lh/lj MBTiles stay at their existing configured location. Native MapLibre
+MBTiles raster sources read the original SQLite tiles table directly; no remote
+style, glyph, sprite, local tile server, or conversion of these files is required.
+Existing region overlap ordering and optional OpenTopo URLs are retained.
+Only old downloaded Mapnik/OpenTopo cache.db images require an adaptation:
+they are copied into per-provider MBTiles in files/maplibre/legacy-tiles.
+Original cache.db is opened read-only; images and XYZ-to-TMS coordinates are
+preserved. Staging, transactions, fingerprints and atomic publication protect
+existing compatibility data during cancellation/recreation.
+
+Existing SharedPreferences filename, map path keys, HTTP user-agent/additional
+headers/redirect/download concurrency/expiry settings are retained. Saved paths
+are not relocated. Renderer-specific osmdroid cache/bitmap/thread tuning has
+no identical MapLibre control; those stored values remain untouched.
+GPX service, GPX generation/naming/storage, sharing/deleting dialogs,
+FileProvider/manifest, GPS repository, GPS HUD and OpenAir parser were not edited.
+
+6. Verification completed
+:app:testDebugUnitTest: 20 passed, 0 failed, 0 skipped.
+Tests cover the bundled 162 airspace geometries, circle and both arc directions,
+combined arcs, polygon order and geometry precedence, zoom/density conversion,
+follow/mode behavior, heading length, accuracy resolution, old tile key/TMS
+decoding, all 16 retained PNG checksums, and HTTP expiration precedence.
+:app:assembleDebug, :app:assembleRelease, :app:lintDebug: successful.
+:app:compileDebugAndroidTestJavaWithJavac: successful. Four real SQLite cache
+instrumentation tests compile, covering provider isolation, source preservation,
+reuse, staging recovery and interruption. They have not run on a device.
+Gradle sync successful. git diff --check successful.
+No org.osmdroid imports/artifact references remain. Gradle dependencyInsight
+confirmed no osmdroid dependency in debugRuntimeClasspath.
+A separate testReleaseUnitTest task is not exposed by this project; the available
+debug JVM test suite passed and both application build variants were assembled.
+
+7. Exact reproduction and device acceptance still to verify
+No intended user-feature changes were introduced. Pixel-for-pixel rendering,
+gesture timing, native raster overzoom/gaps and camera animation equivalence
+cannot be certified without launching with the installed map files.
+Verify launch, local MBTiles display and tile orientation at several zoom levels;
+airplane mode; region overlap and cached gaps; switching OpenTopo/airspaces;
+polygon/circle/arc boundaries; aircraft icon/heading/accuracy/follow;
+pan/zoom and control visibility; background/resume and fragment recreation.
+Also verify the existing GPS status/altitude/speed UI, GPX start/stop and points,
+file name/content/location, file sharing/deleting, dialogs and saved preferences.
+These end-to-end GPS/GPX/UI checks have not been executed on a device.
+
+8. Remaining technical risks
+Installed MBTiles schema/data/access permissions need confirmation on the device.
+A missing/unreadable region file or failed old-cache import reports an explicit
+map error rather than silently substituting online map data.
+First cache import temporarily needs space for a compatibility copy plus staging;
+the original cache is retained. Device SQLite/atomic move behavior is covered by
+compiled instrumentation tests but remains unexecuted.
+Native rendering may differ subtly from osmdroid despite matching coordinates,
+paint widths, icons and zoom scale. GPU performance/lifecycle need device checks.
+MapLibre's bundled native library was packaged successfully; the build reported
+that it could not strip its debug symbols. Existing AGP deprecation warnings and
+GPX deprecated-API warnings remain outside this migration.

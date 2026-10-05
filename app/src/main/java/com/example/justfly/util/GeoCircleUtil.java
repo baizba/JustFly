@@ -2,7 +2,7 @@ package com.example.justfly.util;
 
 import com.example.justfly.dataformat.openair.model.Circle;
 
-import org.osmdroid.util.GeoPoint;
+import com.example.justfly.dataformat.openair.overlay.GeoCoordinate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +14,12 @@ import java.util.List;
  */
 public class GeoCircleUtil {
 
-    public static List<GeoPoint> getCirclePoints(Circle circle) {
+    public static List<GeoCoordinate> getCirclePoints(Circle circle) {
         // Number of points to approximate the circle
         int points = 360;
 
-        // Create a list of GeoPoints for the circle
-        List<GeoPoint> circlePoints = new ArrayList<>();
+        // Create a list of GeoCoordinates for the circle
+        List<GeoCoordinate> circlePoints = new ArrayList<>();
 
         // Earth's radius in meters
         double earthRadius = 6371000;
@@ -36,7 +36,7 @@ public class GeoCircleUtil {
             double newLatitude = circle.getLatitude() + latitudeOffset;
             double newLongitude = circle.getLongitude() + longitudeOffset;
 
-            circlePoints.add(new GeoPoint(newLatitude, newLongitude));
+            circlePoints.add(new GeoCoordinate(newLatitude, newLongitude));
         }
 
         //add the first point to the end to close the circle to make sure polygon is closed

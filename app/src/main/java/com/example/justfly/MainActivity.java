@@ -1,7 +1,5 @@
 package com.example.justfly;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -15,10 +13,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.justfly.handler.LocationPermissionHandler;
-
-import org.osmdroid.config.Configuration;
-
-import java.util.function.BiConsumer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
             loadFragments();
         }
 
-        handlePreferences(Configuration.getInstance()::load);
         EdgeToEdge.enable(this);
         setupInsets();
 
@@ -63,13 +56,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void showLocationRequestMessage() {
         Toast.makeText(this, R.string.locationRequestMessage, Toast.LENGTH_SHORT).show();
-    }
-
-    private void handlePreferences(BiConsumer<Context, SharedPreferences> operation) {
-        String preferenceFileName = getPackageName() + "_preferences";
-        SharedPreferences sharedPreferences = getSharedPreferences(preferenceFileName, Context.MODE_PRIVATE);
-        Context ctx = getApplicationContext();
-        operation.accept(ctx, sharedPreferences);
     }
 
     private void setupInsets() {

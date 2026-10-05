@@ -7,6 +7,7 @@ import com.example.justfly.dataformat.openair.model.Arc;
 import com.example.justfly.dataformat.openair.model.DrawingDirection;
 import com.example.justfly.dataformat.openair.model.Openair;
 import com.example.justfly.dataformat.openair.model.PolygonPoint;
+import com.example.justfly.util.GeoArcUtil;
 
 import org.junit.jupiter.api.Test;
 
@@ -38,8 +39,9 @@ class OpenairToOverlayMapperTest {
         openair.addAirspace(airspace);
 
         OpenairToOverlayMapper mapper = new OpenairToOverlayMapper();
-        int overlays = mapper.getPolygonAirspaces(openair).size();
+        List<AirspaceGeometry> overlays = mapper.getPolygonAirspaces(openair);
 
-        assertEquals(1, overlays);
+        assertEquals(1, overlays.size());
+        assertEquals(GeoArcUtil.getSingleArcPoints(arc).get(0), overlays.get(0).points().get(0));
     }
 }

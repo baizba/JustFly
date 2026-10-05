@@ -4,7 +4,7 @@ import com.example.justfly.dataformat.openair.model.Airspace;
 import com.example.justfly.dataformat.openair.model.Arc;
 import com.example.justfly.dataformat.openair.model.DrawingDirection;
 
-import org.osmdroid.util.GeoPoint;
+import com.example.justfly.dataformat.openair.overlay.GeoCoordinate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +18,8 @@ import java.util.List;
 public class GeoArcUtil {
     private static final int EARTH_RADIUS_METERS = 6371000;
 
-    public static List<GeoPoint> getSingleArcPoints(Arc arc) {
-        List<GeoPoint> arcPoints = new ArrayList<>();
+    public static List<GeoCoordinate> getSingleArcPoints(Arc arc) {
+        List<GeoCoordinate> arcPoints = new ArrayList<>();
 
         // Calculate radius in meters (from center to start point)
         double radius = haversineDistance(
@@ -48,7 +48,7 @@ public class GeoArcUtil {
                     ? (startBearing + i * angleStep) % 360
                     : (startBearing - i * angleStep + 360) % 360;
 
-            GeoPoint point = calculateDestinationPoint(
+            GeoCoordinate point = calculateDestinationPoint(
                     arc.getCenterLatitude(), arc.getCenterLongitude(),
                     bearingDeg, radius);
             arcPoints.add(point);
@@ -57,18 +57,18 @@ public class GeoArcUtil {
         return arcPoints;
     }
 
-    public static List<GeoPoint> getCombinedArcPoints(Airspace airspace) {
+    public static List<GeoCoordinate> getCombinedArcPoints(Airspace airspace) {
         Arc arc1 = airspace.getArcs().get(0);
         Arc arc2 = airspace.getArcs().get(1);
 
-        List<GeoPoint> arc1Points = getSingleArcPoints(arc1);
-        List<GeoPoint> arc2Points = getSingleArcPoints(arc2);
+        List<GeoCoordinate> arc1Points = getSingleArcPoints(arc1);
+        List<GeoCoordinate> arc2Points = getSingleArcPoints(arc2);
 
-        GeoPoint arc2Start = arc2Points.get(0);
-        GeoPoint arc1Start = arc1Points.get(0);
+        GeoCoordinate arc2Start = arc2Points.get(0);
+        GeoCoordinate arc1Start = arc1Points.get(0);
 
         // Combine: arc1 → line to arc2 start → arc2 → line to arc1 start
-        List<GeoPoint> fullPolygonPoints = new ArrayList<>();
+        List<GeoCoordinate> fullPolygonPoints = new ArrayList<>();
         fullPolygonPoints.addAll(arc1Points);
         fullPolygonPoints.add(arc2Start);
         fullPolygonPoints.addAll(arc2Points);
@@ -82,7 +82,7 @@ public class GeoArcUtil {
     }
 
 
-    private static GeoPoint calculateDestinationPoint(double lat, double lon, double bearingDeg, double distanceMeters) {
+    private static GeoCoordinate calculateDestinationPoint(double lat, double lon, double bearingDeg, double distanceMeters) {
         double angularDistance = distanceMeters / EARTH_RADIUS_METERS;
         double bearingRad = Math.toRadians(bearingDeg);
         double latRad = Math.toRadians(lat);
@@ -96,7 +96,7 @@ public class GeoArcUtil {
                 Math.cos(angularDistance) - Math.sin(latRad) * Math.sin(destLatRad)
         );
 
-        return new GeoPoint(Math.toDegrees(destLatRad), Math.toDegrees(destLonRad));
+        return new GeoCoordinate(Math.toDegrees(destLatRad), Math.toDegrees(destLonRad));
     }
 
     private static double calculateBearing(double lat1, double lon1, double lat2, double lon2) {
