@@ -51,8 +51,6 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
     implementation libs.maplibre.android
-    // Already supplied by MapLibre; exposed here to preserve existing tile HTTP preferences.
-    implementation libs.okhttp
     testRuntimeOnly libs.junit.platform.launcher
     implementation libs.play.services.location
     implementation libs.play.services.awareness

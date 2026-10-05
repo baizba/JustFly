@@ -9,22 +9,17 @@ import java.util.List;
 
 /** Retains the installed application's storage keys; never relocates existing map files. */
 final class MapPreferences {
-    final SharedPreferences preferences;
     final File basePath;
-    final File cachePath;
     final int animationDuration;
 
     MapPreferences(Context context) {
-        preferences = context.getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(context.getPackageName() + "_preferences", Context.MODE_PRIVATE);
         String configured = preferences.getString("osmdroid.basePath", null);
         File resolved = configured == null ? discoverBasePath(context) : new File(configured);
         basePath = resolved;
-        cachePath = new File(preferences.getString("osmdroid.cachePath", new File(basePath, "tiles").getAbsolutePath()));
         animationDuration = Math.max(1, preferences.getInt("osmdroid.ZoomSpeedDefault", 500));
-        MapHttpConfiguration.install(context.getApplicationContext(), preferences);
         if (configured == null) {
-            preferences.edit().putString("osmdroid.basePath", basePath.getAbsolutePath())
-                    .putString("osmdroid.cachePath", cachePath.getAbsolutePath()).apply();
+            preferences.edit().putString("osmdroid.basePath", basePath.getAbsolutePath()).apply();
         }
     }
 

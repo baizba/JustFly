@@ -20,12 +20,10 @@ final class MapTileOverlays {
     // The old HashMap insertion order determines region overlap drawing order.
     private static final List<String> REGIONS = legacyRegionOrder();
     private final Map<String, File> regions = new HashMap<>();
-    private final Map<String, File> legacyCaches;
     private final List<String> vfrLayers = new ArrayList<>();
     private final List<String> topoLayers = new ArrayList<>();
 
-    MapTileOverlays(File basePath, Map<String, File> legacyCaches) {
-        this.legacyCaches = legacyCaches;
+    MapTileOverlays(File basePath) {
         for (String region : REGIONS) {
             File file = new File(new File(basePath, "maps"), region + ".mbtiles");
             if (!file.isFile() || !file.canRead()) {
@@ -44,18 +42,11 @@ final class MapTileOverlays {
     }
 
     void addTo(Style style, boolean openTopo) {
-        File baseCache = legacyCaches.get("Mapnik");
-        if (baseCache != null) {
-            addRaster(style, "legacy-base", mbTiles(baseCache, 0, 19), null);
-        }
         for (String region : REGIONS) {
             String id = "openvfr-" + region;
             addRaster(style, id, mbTiles(regions.get(region), 4, 11), vfrLayers);
         }
-        File topoCache = legacyCaches.get("OpenTopoMap");
-        if (topoCache != null) {
-            addRaster(style, "legacy-topo", mbTiles(topoCache, 0, 17), topoLayers);
-        }
+        // Optional online tiles use MapLibre's default HTTP handling and ambient cache.
         TileSet topo = new TileSet("2.0.0",
                 "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
                 "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",

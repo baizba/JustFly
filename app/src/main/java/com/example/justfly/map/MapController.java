@@ -34,7 +34,6 @@ import org.maplibre.geojson.Point;
 import org.maplibre.geojson.Polygon;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -117,9 +116,7 @@ public final class MapController {
         });
         files.execute(() -> {
             try {
-                Map<String, java.io.File> caches = LegacyTileCache.prepare(surface.getContext().getApplicationContext(),
-                        preferences.cachePath);
-                MapTileOverlays prepared = new MapTileOverlays(preferences.basePath, caches);
+                MapTileOverlays prepared = new MapTileOverlays(preferences.basePath);
                 surface.post(() -> {
                     if (!destroyed) {
                         tiles = prepared;
@@ -196,7 +193,6 @@ public final class MapController {
     public void saveMapState(Bundle state) { mapView.onSaveInstanceState(state); }
 
     public void resumeMap(Context context) {
-        MapHttpConfiguration.install(context.getApplicationContext(), preferences.preferences);
         mapView.onResume();
         resumed = true;
         subscribe();
