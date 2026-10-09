@@ -12,7 +12,8 @@ Documentation:
 https://maplibre.org/maplibre-native/android/api/-map-libre%20-native%20-android/org.maplibre.android.offline/-offline-manager/set-maximum-ambient-cache-size.html
 https://maplibre.org/maplibre-native/android/api/-map-libre%20-native%20-android/org.maplibre.android.offline/-offline-manager/index.html
 
-The aviation lo/lh/lj MBTiles remain SQLite databases at their existing locations.
+Aviation MBTiles remain SQLite databases in the app-data files/osmdroid/maps directory.
+The loader discovers .mbtiles files there without requiring specific filenames.
 MapLibre reads their tiles directly. Their data is not imported into a secondary
 cache, copied, converted, or downloaded. Permanent offline aviation coverage
 depends on these MBTiles, independently of the evictable ambient cache.
@@ -25,9 +26,12 @@ MBTiles layers, custom cache path, legacy cache fingerprint/staging machinery,
 or osmdroid HTTP expiration/header/thread overrides remain.
 Old cached files or stored settings are no longer used; this code change does
 not delete previously stored files on the user's device.
-The legacy osmdroid.basePath preference remains solely to locate the user's
-existing aviation MBTiles without moving them. The unrelated zoom animation
-preference also remains. osmdroid.cachePath is no longer read or written.
+MapPreferences resolves context.getFilesDir()/osmdroid/maps directly, without
+path probing or filename validation. osmdroid.basePath and osmdroid.cachePath
+are no longer read or written. The existing zoom animation preference remains.
+MapTileOverlays validates readability and the SQLite tiles table, reporting
+missing maps or invalid databases explicitly. Basename-based overlap ordering
+is retained, including for the existing lo/lh/lj files.
 
 Files changed by this follow-up (6)
 app/build.gradle
@@ -79,6 +83,20 @@ aviation MBTiles still displayed and switching to previously viewed OpenTopo
 displayed the same viewport from the SDK's persistent cache.
 Restored airplane mode to its original disabled state and returned to aviation.
 Source searches confirm no legacy cache/HTTP adapter references remain.
+
+Map-directory simplification (2026-10-10)
+Changed MapPreferences, MapController, MapTileOverlays and this report.
+Added MapTileOverlaysTest. No files removed or dependencies changed.
+The fixed app-data directory replaces the legacy base-path preference and all
+candidate probing; discovery and SQLite validation belong to the map loader.
+Four discovery tests cover arbitrary names/case-insensitive extensions,
+ignored non-map files/directories, existing overlap order, missing directories,
+and directories with no MBTiles.
+Full JVM suite: 18 passed, 0 skipped, 0 failed.
+Debug and release APK builds and lint: successful.
+Deployed to emulator-5554 and confirmed installed aviation MBTiles load at Graz
+after setting the emulator GPS to longitude 15.44, latitude 47.07.
+The pre-existing white-margin overlap remains visible and is a separate issue.
 
 Remaining limits
 Runtime checks cover the emulator's current Graz viewport and source switching,

@@ -9,6 +9,9 @@ import org.maplibre.android.style.sources.RasterSource;
 import org.maplibre.android.style.sources.TileSet;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Locale;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,15 +20,13 @@ import static org.maplibre.android.style.layers.PropertyFactory.*;
 
 /** Raster rendering only: existing aviation databases are never converted or downloaded. */
 final class MapTileOverlays {
-    // The old HashMap insertion order determines region overlap drawing order.
-    private static final List<String> REGIONS = legacyRegionOrder();
-    private final Map<String, File> regions = new HashMap<>();
+    private final List<File> maps;
     private final List<String> vfrLayers = new ArrayList<>();
     private final List<String> topoLayers = new ArrayList<>();
 
-    MapTileOverlays(File basePath) {
-        for (String region : REGIONS) {
-            File file = new File(new File(basePath, "maps"), region + ".mbtiles");
+    MapTileOverlays(File mapsDirectory) {
+        maps = discoverMaps(mapsDirectory);
+        for (File file : maps) {
             if (!file.isFile() || !file.canRead()) {
                 throw new IllegalStateException("MBTiles file not found or unreadable: " + file.getAbsolutePath());
             }
@@ -37,14 +38,13 @@ final class MapTileOverlays {
             } catch (RuntimeException exception) {
                 throw new IllegalStateException("Invalid MBTiles database: " + file.getAbsolutePath(), exception);
             }
-            regions.put(region, file);
         }
     }
 
     void addTo(Style style, boolean openTopo) {
-        for (String region : REGIONS) {
-            String id = "openvfr-" + region;
-            addRaster(style, id, mbTiles(regions.get(region), 4, 11), vfrLayers);
+        for (int index = 0; index < maps.size(); index++) {
+            String id = "openvfr-" + index;
+            addRaster(style, id, mbTiles(maps.get(index), 4, 11), vfrLayers);
         }
         // Optional online tiles use MapLibre's default HTTP handling and ambient cache.
         TileSet topo = new TileSet("2.0.0",
@@ -84,11 +84,28 @@ final class MapTileOverlays {
         return tiles;
     }
 
-    private static List<String> legacyRegionOrder() {
-        Map<String, Boolean> regions = new HashMap<>();
-        for (String region : List.of("lo", "lh", "lj")) {
-            regions.put(region, true);
+    static List<File> discoverMaps(File mapsDirectory) {
+        File[] files = mapsDirectory.listFiles(file -> file.isFile()
+                && file.getName().toLowerCase(Locale.ROOT).endsWith(".mbtiles"));
+        if (files == null) {
+            throw new IllegalStateException("Map directory not found or unreadable: " + mapsDirectory);
         }
-        return List.copyOf(regions.keySet());
+        if (files.length == 0) {
+            throw new IllegalStateException("No MBTiles files found in: " + mapsDirectory);
+        }
+        Arrays.sort(files, Comparator.comparing(File::getName));
+        // Retain the basename-based HashMap ordering used for existing region overlaps.
+        // Grouping also keeps files with identical basenames and different extension case.
+        Map<String, List<File>> regions = new HashMap<>();
+        for (File file : files) {
+            String name = file.getName();
+            String basename = name.substring(0, name.length() - ".mbtiles".length());
+            regions.computeIfAbsent(basename, ignored -> new ArrayList<>()).add(file);
+        }
+        List<File> ordered = new ArrayList<>();
+        for (List<File> region : regions.values()) {
+            ordered.addAll(region);
+        }
+        return List.copyOf(ordered);
     }
 }

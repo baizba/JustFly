@@ -116,7 +116,7 @@ public final class MapController {
         });
         files.execute(() -> {
             try {
-                MapTileOverlays prepared = new MapTileOverlays(preferences.basePath);
+                MapTileOverlays prepared = new MapTileOverlays(preferences.mapsDirectory);
                 surface.post(() -> {
                     if (!destroyed) {
                         tiles = prepared;
