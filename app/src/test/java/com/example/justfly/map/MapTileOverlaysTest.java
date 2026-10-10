@@ -5,9 +5,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,19 +28,14 @@ class MapTileOverlaysTest {
     }
 
     @Test
-    void retainsExistingBasenameOverlapOrdering() throws Exception {
-        Map<String, Boolean> legacyRegions = new HashMap<>();
+    void sortsFilesByName() throws Exception {
         for (String region : List.of("lo", "lh", "lj")) {
-            legacyRegions.put(region, true);
             Files.createFile(mapsDirectory.resolve(region + ".mbtiles"));
         }
-
-        List<String> expected = legacyRegions.keySet().stream()
-                .map(region -> region + ".mbtiles").toList();
         List<String> actual = MapTileOverlays.discoverMaps(mapsDirectory.toFile()).stream()
                 .map(File::getName).toList();
 
-        assertEquals(expected, actual);
+        assertEquals(List.of("lh.mbtiles", "lj.mbtiles", "lo.mbtiles"), actual);
     }
 
     @Test

@@ -1,7 +1,5 @@
 package com.example.justfly.map;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import org.maplibre.android.maps.Style;
 import org.maplibre.android.style.layers.RasterLayer;
@@ -12,9 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import static org.maplibre.android.style.layers.Property.*;
 import static org.maplibre.android.style.layers.PropertyFactory.*;
 
@@ -65,28 +61,11 @@ final class MapTileOverlays {
     }
 
     private static TileSet regionalTiles(File file) {
-        try (SQLiteDatabase database = SQLiteDatabase.openDatabase(file.getAbsolutePath(), null,
-                SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
-             Cursor zooms = database.rawQuery("SELECT MIN(zoom_level),MAX(zoom_level),COUNT(*) FROM tiles", null)) {
-            if (!zooms.moveToFirst() || zooms.getLong(2) == 0
-                    || zooms.getInt(0) < 0 || zooms.getInt(1) > 30) {
-                throw new IllegalStateException("Empty or invalid MBTiles zoom coverage: " + file);
-            }
-            String path = Uri.encode(file.getAbsolutePath(), "/");
-            // Native MBTilesFileSource flips XYZ y to TMS and reads tile_data directly.
-            TileSet tiles = new TileSet("2.0.0", "mbtiles://" + path + "?file={x}/{y}/{z}.png");
-            tiles.minZoom = (float) zooms.getInt(0);
-            tiles.maxZoom = (float) zooms.getInt(1);
-            try (Cursor metadata = database.rawQuery("SELECT value FROM metadata WHERE name='bounds'", null)) {
-                if (metadata.moveToFirst()) {
-                    String[] bounds = metadata.getString(0).split(",");
-                    if (bounds.length != 4) throw new IllegalArgumentException("Invalid MBTiles bounds: " + file);
-                    tiles.setBounds(Float.parseFloat(bounds[0]), Float.parseFloat(bounds[1]),
-                            Float.parseFloat(bounds[2]), Float.parseFloat(bounds[3]));
-                }
-            }
-            return tiles;
-        }
+        String path = Uri.encode(file.getAbsolutePath(), "/");
+        TileSet tiles = new TileSet("2.0.0", "mbtiles://" + path + "?file={x}/{y}/{z}.png");
+        tiles.minZoom = 4f;
+        tiles.maxZoom = 11f;
+        return tiles;
     }
 
     static List<File> discoverMaps(File mapsDirectory) {
@@ -99,18 +78,6 @@ final class MapTileOverlays {
             throw new IllegalStateException("No MBTiles files found in: " + mapsDirectory);
         }
         Arrays.sort(files, Comparator.comparing(File::getName));
-        // Retain the basename-based HashMap ordering used for existing region overlaps.
-        // Grouping also keeps files with identical basenames and different extension case.
-        Map<String, List<File>> regions = new HashMap<>();
-        for (File file : files) {
-            String name = file.getName();
-            String basename = name.substring(0, name.length() - ".mbtiles".length());
-            regions.computeIfAbsent(basename, ignored -> new ArrayList<>()).add(file);
-        }
-        List<File> ordered = new ArrayList<>();
-        for (List<File> region : regions.values()) {
-            ordered.addAll(region);
-        }
-        return List.copyOf(ordered);
+        return Arrays.asList(files);
     }
 }
