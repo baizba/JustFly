@@ -25,11 +25,10 @@ public class MapFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         MapSurfaceView map = view.findViewById(R.id.map);
         map.configureButtons(view.findViewById(R.id.btnSwitchMap), view.findViewById(R.id.btnFollowMe));
-        mapController = new MapController(map, this::showMapError);
-        mapController.showMyLocation(getResources(), JustFlyApp.getLocationRepository(requireContext()));
         List<String> openairData = ResourceFileUtil.readResourceFile("openair/lo_airspaces.openair.txt");
         Openair openair = new OpenairParser().parse(openairData);
-        mapController.addAirspaces(openair);
+        mapController = new MapController(map, JustFlyApp.getLocationRepository(requireContext()),
+                openair, this::showMapError);
         mapController.initializeMap(savedInstanceState);
         view.findViewById(R.id.btnFollowMe).setOnClickListener(v -> mapController.enableFollowMyLocation());
         view.findViewById(R.id.btnSwitchMap).setOnClickListener(v -> mapController.switchMapSource());
@@ -45,12 +44,12 @@ public class MapFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (mapController != null) mapController.resumeMap(requireContext());
+        if (mapController != null) mapController.resumeMap();
     }
 
     @Override
     public void onPause() {
-        if (mapController != null) mapController.pauseMap(requireContext());
+        if (mapController != null) mapController.pauseMap();
         super.onPause();
     }
 

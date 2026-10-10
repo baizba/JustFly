@@ -108,3 +108,54 @@ GPX recording/sharing/deleting and detailed aircraft heading, every airspace arc
 gesture/animation parity and lifecycle scenarios were not re-tested end to end.
 Ambient cache eviction affects optional online tiles only; the aviation MBTiles
 are the permanent offline source.
+
+MapController simplification (2026-10-10)
+Changed MapController.java, MapFragment.java and this report.
+Added AircraftRenderer.java, AirspaceRenderer.java and AirspaceRendererTest.java.
+No files removed. No dependency or build configuration changes.
+
+MapController now coordinates lifecycle, repository subscription, camera following
+and map controls. Its size falls from 356 to 206 lines. Constructor inputs replace
+the separate showMyLocation/addAirspaces setup calls. Map initialization proceeds
+from map readiness to background MBTiles validation to local style installation;
+the competing readiness checks and loadingStyle flag are gone. A GPS fix arriving
+before the style is installed is buffered and replayed once rendering is ready.
+resumeMap/pauseMap no longer take an unused Context. The resumed flag also balances
+repository subscription, removing the redundant subscribed flag.
+
+AircraftRenderer registers the existing aircraft bitmap once per map view and
+retains direct source/layer references. GPS fixes update position and bearing.
+Accuracy radius and the existing 600-physical-pixel heading line are recalculated
+for GPS/zoom changes, rather than every pan or camera-idle event. A missing bearing
+keeps the icon north-up and clears the heading line. Accuracy colors, icon anchor,
+line width, north-up camera and all existing zoom/follow calculations are retained.
+
+AirspaceRenderer converts the existing domain geometries to GeoJSON once. It
+installs the populated source with the same transparent fill and black boundaries.
+Source switching only changes visibility. Existing airspace click consumption
+and layer order are retained. Unused renderer-only feature properties are omitted;
+OpenAir models, names, classes, altitudes, parsing and circle/arc sampling are
+unchanged. The local style remains necessary to describe raster/overlay rendering;
+it introduces no online style dependency.
+
+Verification
+:app:testDebugUnitTest: 20 passed, 0 skipped, 0 failed.
+New tests compare every coordinate and ring closure of bundled airspaces through
+the GeoJSON adapter and cover short/empty boundaries. Existing geometry, heading,
+accuracy, zoom/follow, tile discovery and artwork tests remain.
+:app:assembleDebug, :app:assembleRelease, :app:lintDebug: successful.
+Deployed to emulator-5554. Aviation MBTiles and aircraft display at Graz.
+GPS updates moved/rotated the aircraft and updated altitude/speed. Panning disabled
+following; Follow recentered. OpenTopo source switching displayed airspace boundaries.
+The plus control zoomed the raster map while preserving the heading's screen length.
+Creating a new map activity after backgrounding rendered successfully.
+Backgrounding and resuming the existing activity retained its map and aircraft.
+Aviation MBTiles and aircraft also displayed with airplane mode enabled after
+supplying a GPS fix. Stationary fixes showed the north-up icon without a heading
+line. The emulator network state was restored after testing.
+
+Limits
+The white MBTiles overlap remains an existing, separate issue. GPS/GPX logic, UI,
+preferences, tile discovery/order and cache behavior were not changed. GPX workflows
+were not re-tested end to end. Runtime testing did not exhaustively cover zoom limits,
+large accuracy radii or destruction during asynchronous style/tile loading.
