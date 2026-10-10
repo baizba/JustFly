@@ -26,17 +26,13 @@ import static org.maplibre.android.style.layers.PropertyFactory.*;
 /** One aircraft bitmap, its GPS accuracy circle and its screen-length heading line. */
 final class AircraftRenderer {
     private final MapLibreMap map;
-    private final float density;
     private final GeoJsonSource aircraft = new GeoJsonSource("aircraft", emptyFeatures());
     private final GeoJsonSource heading = new GeoJsonSource("heading", emptyFeatures());
     private final CircleLayer accuracy;
     private Location location;
-    private double zoom;
 
     AircraftRenderer(Style style, MapLibreMap map, Resources resources, float density) {
         this.map = map;
-        this.density = density;
-        zoom = MapBehavior.toLegacyZoom(map.getCameraPosition().zoom, density);
         Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.airplane_icon_black);
         if (bitmap == null) throw new IllegalStateException("Could not load aircraft icon");
         style.addImage("aircraft-icon", bitmap);
@@ -64,15 +60,14 @@ final class AircraftRenderer {
         updateAccuracyAndHeading();
     }
 
-    void updateZoom(double zoom) {
-        this.zoom = zoom;
+    void updateZoom() {
         updateAccuracyAndHeading();
     }
 
     private void updateAccuracyAndHeading() {
         if (location == null) return;
         accuracy.setProperties(circleRadius((float) (location.getAccuracy()
-                / MapBehavior.metersPerPixel(location.getLatitude(), zoom, density) / density)));
+                / map.getProjection().getMetersPerPixelAtLatitude(location.getLatitude()))));
         if (!location.hasBearing()) {
             heading.setGeoJson(emptyFeatures());
             return;

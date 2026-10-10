@@ -6,12 +6,12 @@ import android.view.MotionEvent;
 import androidx.annotation.Nullable;
 import com.example.justfly.dataformat.openair.model.Openair;
 import com.example.justfly.gps.LocationRepository;
-import org.maplibre.android.camera.CameraPosition;
 import org.maplibre.android.camera.CameraUpdateFactory;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.maps.Style;
+import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 public final class MapController {
     private final MapSurfaceView surface;
     private final MapView mapView;
-    private final MapPreferences preferences;
+    private final File mapsDirectory;
     private final MapBehavior behavior = new MapBehavior();
     private final ExecutorService files = Executors.newSingleThreadExecutor();
     private final float density;
@@ -34,7 +34,6 @@ public final class MapController {
     private MapTileOverlays tiles;
     private AircraftRenderer aircraft;
     private Location lastLocation;
-    private double cameraZoom = Double.NaN;
     private boolean resumed;
     private boolean destroyed;
 
@@ -44,10 +43,11 @@ public final class MapController {
         this.locations = Objects.requireNonNull(locations);
         this.reportError = Objects.requireNonNull(reportError);
         mapView = surface.nativeMapView();
-        preferences = new MapPreferences(surface.getContext());
+        mapsDirectory = new File(surface.getContext().getFilesDir(), "osmdroid/maps");
         density = surface.getResources().getDisplayMetrics().density;
         airspaces = new AirspaceRenderer(Objects.requireNonNull(openair), density);
-        surface.zoomControls().setZoomListener(this::zoom);
+        surface.zoomControls().setOnZoomInClickListener(view -> zoom(true));
+        surface.zoomControls().setOnZoomOutClickListener(view -> zoom(false));
         mapView.setOnTouchListener((view, event) -> {
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 behavior.onMapTouchDown();
@@ -67,12 +67,9 @@ public final class MapController {
             map.getUiSettings().setCompassEnabled(false);
             map.getUiSettings().setRotateGesturesEnabled(false);
             map.getUiSettings().setTiltGesturesEnabled(false);
-            map.setMinZoomPreference(MapBehavior.toNativeZoom(MapBehavior.MIN_ZOOM, density));
-            map.setMaxZoomPreference(MapBehavior.toNativeZoom(MapBehavior.MAX_ZOOM, density));
-            map.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder()
-                    .target(new LatLng(0, 0))
-                    .zoom(MapBehavior.toNativeZoom(MapBehavior.INITIAL_ZOOM, density))
-                    .bearing(0).tilt(0).build()));
+            map.setMinZoomPreference(MapBehavior.MIN_ZOOM);
+            map.setMaxZoomPreference(MapBehavior.MAX_ZOOM);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0, 0), MapBehavior.INITIAL_ZOOM));
             map.addOnCameraMoveListener(this::onCameraMove);
             map.addOnMapClickListener(point -> behavior.isOpenTopo() && style != null
                     && airspaces.contains(map, point));
@@ -84,7 +81,7 @@ public final class MapController {
     private void loadTiles() {
         files.execute(() -> {
             try {
-                MapTileOverlays prepared = new MapTileOverlays(preferences.mapsDirectory);
+                MapTileOverlays prepared = new MapTileOverlays(mapsDirectory);
                 surface.post(() -> {
                     if (destroyed) return;
                     tiles = prepared;
@@ -109,7 +106,7 @@ public final class MapController {
                 aircraft = new AircraftRenderer(loaded, map, surface.getResources(), density);
                 airspaces.addTo(loaded);
                 style = loaded;
-                applyVisibility();
+                airspaces.setVisible(behavior.isOpenTopo());
                 if (lastLocation != null) aircraft.updateLocation(lastLocation);
                 centerOnLocation();
             } catch (RuntimeException exception) {
@@ -173,20 +170,16 @@ public final class MapController {
     private void centerOnLocation() {
         if (style != null && lastLocation != null && behavior.isFollowing() && resumed) {
             map.animateCamera(CameraUpdateFactory.newLatLng(
-                    new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude())),
-                    preferences.animationDuration);
+                    new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude())));
         }
     }
 
     private void onCameraMove() {
         if (destroyed || map == null) return;
         double zoom = map.getCameraPosition().zoom;
-        if (Double.compare(cameraZoom, zoom) == 0) return;
-        cameraZoom = zoom;
-        double legacyZoom = MapBehavior.toLegacyZoom(zoom, density);
-        surface.zoomControls().updateEnabled(legacyZoom < MapBehavior.MAX_ZOOM - 0.0001,
-                legacyZoom > MapBehavior.MIN_ZOOM + 0.0001);
-        if (style != null) aircraft.updateZoom(legacyZoom);
+        surface.zoomControls().setIsZoomInEnabled(zoom < map.getMaxZoomLevel());
+        surface.zoomControls().setIsZoomOutEnabled(zoom > map.getMinZoomLevel());
+        if (style != null) aircraft.updateZoom();
     }
 
     private void applyVisibility() {
@@ -197,9 +190,6 @@ public final class MapController {
 
     private void zoom(boolean zoomIn) {
         if (map == null) return;
-        double zoom = MapBehavior.toLegacyZoom(map.getCameraPosition().zoom, density);
-        double next = Math.max(MapBehavior.MIN_ZOOM, Math.min(MapBehavior.MAX_ZOOM, zoom + (zoomIn ? 1 : -1)));
-        map.animateCamera(CameraUpdateFactory.zoomTo(MapBehavior.toNativeZoom(next, density)),
-                preferences.animationDuration);
+        map.animateCamera(zoomIn ? CameraUpdateFactory.zoomIn() : CameraUpdateFactory.zoomOut());
     }
 }
