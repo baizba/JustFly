@@ -18,33 +18,24 @@ import java.util.Map;
 import static org.maplibre.android.style.layers.Property.*;
 import static org.maplibre.android.style.layers.PropertyFactory.*;
 
-/** Raster rendering only: existing aviation databases are never converted or downloaded. */
+/** Renders regional MBTiles directly without substituting missing tiles with parent tiles. */
 final class MapTileOverlays {
-    private final List<File> maps;
+    private final List<TileSet> regionalTiles = new ArrayList<>();
     private final List<String> vfrLayers = new ArrayList<>();
     private final List<String> topoLayers = new ArrayList<>();
 
     MapTileOverlays(File mapsDirectory) {
-        maps = discoverMaps(mapsDirectory);
-        for (File file : maps) {
-            if (!file.isFile() || !file.canRead()) {
-                throw new IllegalStateException("MBTiles file not found or unreadable: " + file.getAbsolutePath());
-            }
-            // Validate the same tiles table osmdroid consumed, without requiring new metadata.
-            try (SQLiteDatabase db = SQLiteDatabase.openDatabase(file.getAbsolutePath(), null,
-                    SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
-                 Cursor ignored = db.rawQuery("SELECT zoom_level,tile_column,tile_row,tile_data FROM tiles LIMIT 1", null)) {
-                ignored.moveToFirst();
-            } catch (RuntimeException exception) {
-                throw new IllegalStateException("Invalid MBTiles database: " + file.getAbsolutePath(), exception);
-            }
-        }
+        for (File file : discoverMaps(mapsDirectory)) regionalTiles.add(regionalTiles(file));
     }
 
     void addTo(Style style, boolean openTopo) {
-        for (int index = 0; index < maps.size(); index++) {
-            String id = "openvfr-" + index;
-            addRaster(style, id, mbTiles(maps.get(index), 4, 11), vfrLayers);
+        for (int index = 0; index < regionalTiles.size(); index++) {
+            String id = "openvfr-region-" + index;
+            RasterSource source = new RasterSource(id, regionalTiles.get(index), 256);
+            source.setMaxOverscaleFactorForParentTiles(0);
+            source.setPrefetchZoomDelta(0);
+            style.addSource(source);
+            addRasterLayer(style, id, vfrLayers);
         }
         // Optional online tiles use MapLibre's default HTTP handling and ambient cache.
         TileSet topo = new TileSet("2.0.0",
@@ -53,7 +44,8 @@ final class MapTileOverlays {
                 "https://c.tile.opentopomap.org/{z}/{x}/{y}.png");
         topo.minZoom = 0f;
         topo.maxZoom = 17f;
-        addRaster(style, "openTopo", topo, topoLayers);
+        style.addSource(new RasterSource("openTopo", topo, 256));
+        addRasterLayer(style, "openTopo", topoLayers);
         setOpenTopo(style, openTopo);
     }
 
@@ -66,22 +58,35 @@ final class MapTileOverlays {
         }
     }
 
-    private void addRaster(Style style, String id, TileSet tiles, List<String> group) {
-        style.addSource(new RasterSource(id, tiles, 256));
+    private void addRasterLayer(Style style, String id, List<String> group) {
         style.addLayer(new RasterLayer(id, id).withProperties(
                 rasterFadeDuration(0f), rasterResampling(RASTER_RESAMPLING_LINEAR)));
-        if (group != null) {
-            group.add(id);
-        }
+        group.add(id);
     }
 
-    private static TileSet mbTiles(File file, int minZoom, int maxZoom) {
-        String path = Uri.encode(file.getAbsolutePath(), "/");
-        // Native MBTilesFileSource flips XYZ y to TMS and reads tile_data directly.
-        TileSet tiles = new TileSet("2.0.0", "mbtiles://" + path + "?file={x}/{y}/{z}.png");
-        tiles.minZoom = (float) minZoom;
-        tiles.maxZoom = (float) maxZoom;
-        return tiles;
+    private static TileSet regionalTiles(File file) {
+        try (SQLiteDatabase database = SQLiteDatabase.openDatabase(file.getAbsolutePath(), null,
+                SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
+             Cursor zooms = database.rawQuery("SELECT MIN(zoom_level),MAX(zoom_level),COUNT(*) FROM tiles", null)) {
+            if (!zooms.moveToFirst() || zooms.getLong(2) == 0
+                    || zooms.getInt(0) < 0 || zooms.getInt(1) > 30) {
+                throw new IllegalStateException("Empty or invalid MBTiles zoom coverage: " + file);
+            }
+            String path = Uri.encode(file.getAbsolutePath(), "/");
+            // Native MBTilesFileSource flips XYZ y to TMS and reads tile_data directly.
+            TileSet tiles = new TileSet("2.0.0", "mbtiles://" + path + "?file={x}/{y}/{z}.png");
+            tiles.minZoom = (float) zooms.getInt(0);
+            tiles.maxZoom = (float) zooms.getInt(1);
+            try (Cursor metadata = database.rawQuery("SELECT value FROM metadata WHERE name='bounds'", null)) {
+                if (metadata.moveToFirst()) {
+                    String[] bounds = metadata.getString(0).split(",");
+                    if (bounds.length != 4) throw new IllegalArgumentException("Invalid MBTiles bounds: " + file);
+                    tiles.setBounds(Float.parseFloat(bounds[0]), Float.parseFloat(bounds[1]),
+                            Float.parseFloat(bounds[2]), Float.parseFloat(bounds[3]));
+                }
+            }
+            return tiles;
+        }
     }
 
     static List<File> discoverMaps(File mapsDirectory) {
