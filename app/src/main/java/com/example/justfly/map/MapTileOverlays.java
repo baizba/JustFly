@@ -16,22 +16,23 @@ import static org.maplibre.android.style.layers.PropertyFactory.*;
 
 /** Renders regional MBTiles directly without substituting missing tiles with parent tiles. */
 final class MapTileOverlays {
-    private final List<TileSet> regionalTiles = new ArrayList<>();
+    private final List<File> maps;
     private final List<String> vfrLayers = new ArrayList<>();
-    private final List<String> topoLayers = new ArrayList<>();
 
     MapTileOverlays(File mapsDirectory) {
-        for (File file : discoverMaps(mapsDirectory)) regionalTiles.add(regionalTiles(file));
+        maps = discoverMaps(mapsDirectory);
     }
 
     void addTo(Style style, boolean openTopo) {
-        for (int index = 0; index < regionalTiles.size(); index++) {
+        for (int index = 0; index < maps.size(); index++) {
             String id = "openvfr-region-" + index;
-            RasterSource source = new RasterSource(id, regionalTiles.get(index), 256);
+            RasterSource source = new RasterSource(id, regionalTiles(maps.get(index)), 256);
             source.setMaxOverscaleFactorForParentTiles(0);
             source.setPrefetchZoomDelta(0);
             style.addSource(source);
-            addRasterLayer(style, id, vfrLayers);
+            style.addLayer(new RasterLayer(id, id).withProperties(
+                    rasterFadeDuration(0f), rasterResampling(RASTER_RESAMPLING_LINEAR)));
+            vfrLayers.add(id);
         }
         // Optional online tiles use MapLibre's default HTTP handling and ambient cache.
         TileSet topo = new TileSet("2.0.0",
@@ -41,7 +42,8 @@ final class MapTileOverlays {
         topo.minZoom = 0f;
         topo.maxZoom = 17f;
         style.addSource(new RasterSource("openTopo", topo, 256));
-        addRasterLayer(style, "openTopo", topoLayers);
+        style.addLayer(new RasterLayer("openTopo", "openTopo").withProperties(
+                rasterFadeDuration(0f), rasterResampling(RASTER_RESAMPLING_LINEAR)));
         setOpenTopo(style, openTopo);
     }
 
@@ -49,15 +51,7 @@ final class MapTileOverlays {
         for (String id : vfrLayers) {
             style.getLayer(id).setProperties(visibility(openTopo ? NONE : VISIBLE));
         }
-        for (String id : topoLayers) {
-            style.getLayer(id).setProperties(visibility(openTopo ? VISIBLE : NONE));
-        }
-    }
-
-    private void addRasterLayer(Style style, String id, List<String> group) {
-        style.addLayer(new RasterLayer(id, id).withProperties(
-                rasterFadeDuration(0f), rasterResampling(RASTER_RESAMPLING_LINEAR)));
-        group.add(id);
+        style.getLayer("openTopo").setProperties(visibility(openTopo ? VISIBLE : NONE));
     }
 
     private static TileSet regionalTiles(File file) {
