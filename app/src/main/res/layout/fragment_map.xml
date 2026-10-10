@@ -20,6 +20,7 @@
         android:layout_marginBottom="8dp"
         android:background="@null"
         android:contentDescription="@string/changeMapSource"
+        android:src="@android:drawable/ic_menu_mapmode"
         app:layout_constraintBottom_toTopOf="@id/btnFollowMe"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -31,6 +32,7 @@
         android:layout_marginBottom="16dp"
         android:background="@null"
         android:contentDescription="@string/btnFollowText"
+        android:src="@android:drawable/ic_menu_mylocation"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

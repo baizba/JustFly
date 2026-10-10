@@ -24,7 +24,6 @@ public class MapFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         MapSurfaceView map = view.findViewById(R.id.map);
-        map.configureButtons(view.findViewById(R.id.btnSwitchMap), view.findViewById(R.id.btnFollowMe));
         List<String> openairData = ResourceFileUtil.readResourceFile("openair/lo_airspaces.openair.txt");
         Openair openair = new OpenairParser().parse(openairData);
         mapController = new MapController(map, JustFlyApp.getLocationRepository(requireContext()),
