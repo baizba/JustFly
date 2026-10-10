@@ -3,21 +3,27 @@ package com.example.justfly.map;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.MotionEvent;
+
 import androidx.annotation.Nullable;
+
 import com.example.justfly.dataformat.openair.model.Openair;
 import com.example.justfly.gps.LocationRepository;
+
 import org.maplibre.android.camera.CameraUpdateFactory;
 import org.maplibre.android.geometry.LatLng;
 import org.maplibre.android.maps.MapLibreMap;
 import org.maplibre.android.maps.MapView;
 import org.maplibre.android.maps.Style;
+
 import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-/** Coordinates map initialization, lifecycle, GPS following and user controls. */
+/**
+ * Coordinates map initialization, lifecycle, GPS following and user controls.
+ */
 public final class MapController {
     private final MapSurfaceView surface;
     private final MapView mapView;
@@ -125,10 +131,21 @@ public final class MapController {
         centerOnLocation();
     }
 
-    public void startMap() { mapView.onStart(); }
-    public void stopMap() { mapView.onStop(); }
-    public void lowMemory() { mapView.onLowMemory(); }
-    public void saveMapState(Bundle state) { mapView.onSaveInstanceState(state); }
+    public void startMap() {
+        mapView.onStart();
+    }
+
+    public void stopMap() {
+        mapView.onStop();
+    }
+
+    public void lowMemory() {
+        mapView.onLowMemory();
+    }
+
+    public void saveMapState(Bundle state) {
+        mapView.onSaveInstanceState(state);
+    }
 
     public void resumeMap() {
         if (destroyed || resumed) return;
